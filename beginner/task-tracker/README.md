@@ -80,13 +80,13 @@ The project uses modern Java syntax, so a recent JDK version is recommended.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/evertonpontes/task-cli.git
+git clone https://github.com/evertonpontes/java-studies.git
 ```
 
 Navigate to the project directory:
 
 ```bash
-cd task-cli
+cd task-studies/beginner/task-tracker
 ```
 
 ### 2. Compile the project
