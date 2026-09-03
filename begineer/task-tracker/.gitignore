@@ -1,0 +1,38 @@
+```gitignore
+# Compiled Java files
+*.class
+
+# Build directories
+out/
+bin/
+target/
+build/
+
+# Java/JVM generated files
+hs_err_pid*
+replay_pid*
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Generated application data
+tasks.json
+
+# Temporary files
+*.log
+*.tmp
+
+# Local environment files
+.env
+.env.*
+```
