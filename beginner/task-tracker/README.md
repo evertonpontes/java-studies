@@ -187,7 +187,7 @@ taskcli delete 1
 Change the status of a task:
 
 ```cmd
-taskcli status 1 in-progress
+taskcli mark-in-progress 1
 ```
 
 Available statuses:
