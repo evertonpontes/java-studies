@@ -1,35 +1,30 @@
-```gitignore
-# Compiled Java files
-*.class
-
-# Build directories
+### IntelliJ IDEA ###
 out/
-bin/
-target/
-build/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
 
-# Java/JVM generated files
-hs_err_pid*
-replay_pid*
-
-# IDEs
-.idea/
-*.iml
-.vscode/
-.project
+### Eclipse ###
+.apt_generated
 .classpath
-.settings/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-# Operating system files
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
 .DS_Store
-Thumbs.db
-desktop.ini
-
-# Temporary files
-*.log
-*.tmp
-
-# Local environment files
-.env
-.env.*
-```
