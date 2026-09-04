@@ -1,6 +1,7 @@
 package main.java.com.expense.tracker.cli.models;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class Expense {
 
@@ -29,10 +30,6 @@ public class Expense {
         return this.id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public LocalDate getDate() {
         return date;
     }
@@ -55,5 +52,13 @@ public class Expense {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public static  int genNextId(List<Expense> expenseList) {
+
+        return expenseList.stream()
+                .mapToInt(Expense::getId)
+                .max()
+                .orElse(0) + 1;
     }
 }
