@@ -72,10 +72,6 @@ public class CSVMapper {
     private String extractHeader(String text) throws IllegalArgumentException {
         String header = "id,date,description,amount\n";
 
-        if (!text.contains(header)) {
-            throw new IllegalArgumentException("Invalid .csv file format.");
-        }
-
         return text.replace(header, "");
     }
 

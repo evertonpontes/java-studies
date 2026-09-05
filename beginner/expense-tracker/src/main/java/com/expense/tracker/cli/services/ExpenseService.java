@@ -1,5 +1,7 @@
 package main.java.com.expense.tracker.cli.services;
 
+import main.java.com.expense.tracker.cli.dtos.AddExpenseDTO;
+import main.java.com.expense.tracker.cli.dtos.UpdateExpenseDTO;
 import main.java.com.expense.tracker.cli.models.Expense;
 import main.java.com.expense.tracker.cli.repositories.ExpenseRepository;
 import main.java.com.expense.tracker.cli.repositories.ExpenseRepositoryImpl;
@@ -16,7 +18,7 @@ public class ExpenseService {
         repository = ExpenseRepositoryImpl.getInstance();
     }
 
-    public int create(LocalDate date, String description, double amount) {
+    public int create(AddExpenseDTO dto) {
         try {
             List<Expense> expenseList = repository.findAll();
 
@@ -25,9 +27,9 @@ public class ExpenseService {
             repository.save(
                     new Expense(
                             nextId,
-                            date,
-                            description.trim(),
-                            amount
+                            dto.date(),
+                            dto.description(),
+                            dto.amount()
                     )
             );
 
@@ -38,22 +40,32 @@ public class ExpenseService {
         }
     }
 
-    public int update(int id, LocalDate date, String description, double amount) {
+    public int update(UpdateExpenseDTO dto) {
         try {
             List<Expense> expenseList = repository.findAll();
 
             Expense expense = expenseList.stream()
-                    .filter(e -> e.getId() == id)
+                    .filter(e -> e.getId() == dto.id())
                     .findFirst()
                     .orElseThrow(() -> new Exception("Expense not found."));
 
-            expense.setDate(date);
-            expense.setDescription(description);
-            expense.setAmount(amount);
+            if (dto.date().isOk()) {
+                expense.setDate(dto.date().getInstance());
+
+            }
+
+            if (dto.description().isOk()) {
+                expense.setDescription(dto.description().getInstance());
+
+            }
+
+            if (dto.amount().isOk()) {
+                expense.setAmount(dto.amount().getInstance());
+            }
 
             repository.save(expense);
 
-            return id;
+            return dto.id();
         }  catch (Exception e) {
             System.out.println(e.getMessage());
             return -1;
