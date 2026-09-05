@@ -108,10 +108,8 @@ public class ExpenseService {
             List<Expense> allExpenses = repository.findAll();
 
             return allExpenses.stream()
-                    .filter(e -> {
-                        e.getDate().getMonth();
-                        return false;
-                    }).toList();
+                    .filter(e -> e.getDate().getMonth().getValue() == month)
+                    .toList();
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -151,10 +149,7 @@ public class ExpenseService {
             List<Expense> allExpenses = repository.findAll();
 
             return allExpenses.stream()
-                    .filter(e -> {
-                        e.getDate().getMonth();
-                        return false;
-                    })
+                    .filter(e -> e.getDate().getMonth().getValue() == month)
                     .mapToDouble(Expense::getAmount)
                     .sum();
 
