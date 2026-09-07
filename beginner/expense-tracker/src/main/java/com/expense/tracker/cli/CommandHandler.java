@@ -429,7 +429,23 @@ public class CommandHandler {
     }
 
     private void printHelp() {
-        System.out.println("Hello World");
+        System.out.println("USAGE: expense-tracker COMMAND [OPTIONS]\n");
+        System.out.println(
+                """
+                COMMANDS:
+                    add                 Add new expenses to database
+                    update              Update an existing expense
+                    delete              Delete an expense
+                    list                View all expenses
+                    summary             View a summary of all expenses
+                """
+        );
+        System.out.println("""
+                    OPTIONS:
+                        --date              Set the date of the expense (Optional), by default use current date of system
+                        --description       Set the description of the expense
+                        --amount            Set the amount of the expense
+                    """);
     }
 
     private void printHelpAdd() {
