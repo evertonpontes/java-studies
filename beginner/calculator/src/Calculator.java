@@ -117,7 +117,7 @@ public class Calculator implements ActionListener {
 
         }
         else if (c.charAt(0) == '±') {
-
+            handleSignal();
         }
         else if (c.charAt(0) == '%') {
 
@@ -188,7 +188,13 @@ public class Calculator implements ActionListener {
     }
 
     private void handleSignal() {
-
+        if (currNumber.charAt(0) == '-') {
+            currNumber = currNumber.replace("-", "");
+        }
+        else {
+            currNumber = "-" + currNumber;
+        }
+        displayLabel.setText(currNumber);
     }
 
     private double calculateOperation(String num1, String operation, String num2) {
