@@ -123,7 +123,7 @@ public class Calculator implements ActionListener {
             handlePercentage();
         }
         else if (c.charAt(0) == '√') {
-
+            handleSqrt();
         }
         else if (c.equals("AC")) {
             handleClear();
@@ -208,24 +208,25 @@ public class Calculator implements ActionListener {
         displayLabel.setText(currNumber);
     }
 
-    private double calculateOperation(String num1, String operation, String num2) {
-        double result = 0;
-
-        switch (operation) {
-            case "-":
-                result = Double.parseDouble(num1) - Double.parseDouble(num2);
-                break;
-            case "+":
-                result = Double.parseDouble(num1) + Double.parseDouble(num2);
-                break;
-            case "÷":
-                result = Double.parseDouble(num1) / Double.parseDouble(num2);
-                break;
-            case "×":
-                result = Double.parseDouble(num1) * Double.parseDouble(num2);
-                break;
+    private void handleSqrt() {
+        if (!currNumber.isEmpty()) {
+            double currNumberDouble = Double.parseDouble(currNumber);
+            double sqrt = Math.sqrt(currNumberDouble);
+            currNumber = new DecimalFormat("#.############").format(sqrt).replace(',', '.');
+        } else {
+            currNumber = "0";
         }
+        displayLabel.setText(currNumber);
+    }
 
-        return result;
+    private double calculateOperation(String num1, String operation, String num2) {
+
+        return switch (operation) {
+            case "-" -> Double.parseDouble(num1) - Double.parseDouble(num2);
+            case "+" -> Double.parseDouble(num1) + Double.parseDouble(num2);
+            case "÷" -> Double.parseDouble(num1) / Double.parseDouble(num2);
+            case "×" -> Double.parseDouble(num1) * Double.parseDouble(num2);
+            default -> 0;
+        };
     }
 }
