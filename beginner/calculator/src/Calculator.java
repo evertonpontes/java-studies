@@ -120,7 +120,7 @@ public class Calculator implements ActionListener {
             handleSignal();
         }
         else if (c.charAt(0) == '%') {
-
+            handlePercentage();
         }
         else if (c.charAt(0) == '√') {
 
@@ -193,6 +193,17 @@ public class Calculator implements ActionListener {
         }
         else {
             currNumber = "-" + currNumber;
+        }
+        displayLabel.setText(currNumber);
+    }
+
+    private void handlePercentage() {
+        if (!currNumber.isEmpty()) {
+            double currNumberDouble = Double.parseDouble(currNumber);
+            double percentValue = currNumberDouble / 100;
+            currNumber = String.valueOf(percentValue);
+        } else {
+            currNumber = "0";
         }
         displayLabel.setText(currNumber);
     }
