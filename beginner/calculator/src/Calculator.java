@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Calculator implements ActionListener {
     int boardWidth = 360;
@@ -33,6 +34,8 @@ public class Calculator implements ActionListener {
     String[] memoryButtonValues = {"MC", "MR", "M+", "M-"};
     String[] rightButtonValues = {"÷", "×", "-", "+", "="};
     String[] topButtonValues = {"AC", "%", "√"};
+
+    String memory = "";
 
     String prevNumber = "";
     String currNumber = "0";
@@ -114,7 +117,7 @@ public class Calculator implements ActionListener {
             handleEqual();
         }
         else if (c.charAt(0) == 'M') {
-
+            handleMemory(c);
         }
         else if (c.charAt(0) == '±') {
             handleSignal();
@@ -217,6 +220,42 @@ public class Calculator implements ActionListener {
             currNumber = "0";
         }
         displayLabel.setText(currNumber);
+    }
+
+    private void handleMemory(String c) {
+        switch (c) {
+            case "MC" -> memory = "";
+            case "MR" -> {
+                if (!memory.isEmpty()) {
+                    currNumber = memory;
+                    displayLabel.setText(currNumber);
+                }
+            }
+            case "M+" -> {
+                if (!memory.isEmpty()) {
+                    double memoryParsed = Double.parseDouble(memory);
+                    double displayTextParsed = Double.parseDouble(displayLabel.getText());
+                    double result = memoryParsed + displayTextParsed;
+                    memory = new DecimalFormat("#.############").format(result).replace(',', '.');
+                } else {
+                    memory = displayLabel.getText();
+                }
+            }
+            case "M-" -> {
+                if (!memory.isEmpty()) {
+                    double memoryParsed = Double.parseDouble(memory);
+                    double displayTextParsed = Double.parseDouble(displayLabel.getText());
+                    double result = memoryParsed - displayTextParsed;
+                    memory = new DecimalFormat("#.############").format(result).replace(',', '.');
+                } else {
+                    if (displayLabel.getText().charAt(0) == '-') {
+                        memory = displayLabel.getText().replace("-", "");
+                    } else {
+                        memory = "-" + displayLabel.getText();
+                    }
+                }
+            }
+        }
     }
 
     private double calculateOperation(String num1, String operation, String num2) {
