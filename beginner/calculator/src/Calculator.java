@@ -3,6 +3,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 public class Calculator implements ActionListener {
@@ -32,6 +33,13 @@ public class Calculator implements ActionListener {
     String[] memoryButtonValues = {"MC", "MR", "M+", "M-"};
     String[] rightButtonValues = {"÷", "×", "-", "+", "="};
     String[] topButtonValues = {"AC", "%", "√"};
+
+    String prevNumber = "";
+    String currNumber = "0";
+    String pendingOperation = "";
+
+    boolean isTypingNumber = false;
+    boolean isOperationCompleted = false;
 
     public Calculator() {
         f.setSize(boardWidth, boardHeight);
@@ -97,6 +105,110 @@ public class Calculator implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
+        String c = e.getActionCommand();
+
+        if (c.charAt(0) >= '0' && c.charAt(0) <= '9' || c.charAt(0) == '.') {
+            handleNumber(c);
+        }
+        else if (c.charAt(0) == '=') {
+            handleEqual();
+        }
+        else if (c.charAt(0) == 'M') {
+
+        }
+        else if (c.charAt(0) == '±') {
+
+        }
+        else if (c.charAt(0) == '%') {
+
+        }
+        else if (c.charAt(0) == '√') {
+
+        }
+        else if (c.equals("AC")) {
+            handleClear();
+        }
+        else {
+            handleOperation(c);
+        }
+    }
+
+    private void handleNumber(String num) {
+        if (isTypingNumber) {
+            currNumber = currNumber + num;
+        } else {
+            currNumber = num;
+            isTypingNumber = true;
+        }
+        displayLabel.setText(currNumber);
+    }
+
+    private void handleOperation(String op) {
+        if (!pendingOperation.isEmpty() && isTypingNumber) {
+            double result = calculateOperation(prevNumber, pendingOperation, currNumber);
+            prevNumber = new DecimalFormat("#.############").format(result).replace(',', '.');
+            currNumber = new DecimalFormat("#.############").format(result).replace(',', '.');
+            displayLabel.setText(currNumber);
+        }
+        else if (isOperationCompleted) {
+            currNumber = "0";
+            isOperationCompleted = false;
+        }
+        else {
+            prevNumber = currNumber;
+        }
+        isTypingNumber = false;
+        pendingOperation = op;
+    }
+
+    private void handleEqual() {
+        double result = 0;
+
+        if (!pendingOperation.isEmpty()) {
+            isTypingNumber = false;
+            result = calculateOperation(prevNumber, pendingOperation, currNumber);
+        }
+        else {
+            result = Double.parseDouble(currNumber);
+        }
+        String resultValue = new DecimalFormat("#.############").format(result).replace(',', '.');
+        displayLabel.setText(resultValue);
+        prevNumber = resultValue;
+        isOperationCompleted = true;
+    }
+
+    private void handleClear() {
+        isOperationCompleted = false;
+        isTypingNumber = false;
+        currNumber = "0";
+        prevNumber = "";
+        pendingOperation = "";
+
+        displayLabel.setText("0");
+    }
+
+    private void handleSignal() {
+
+    }
+
+    private double calculateOperation(String num1, String operation, String num2) {
+        double result = 0;
+
+        switch (operation) {
+            case "-":
+                result = Double.parseDouble(num1) - Double.parseDouble(num2);
+                break;
+            case "+":
+                result = Double.parseDouble(num1) + Double.parseDouble(num2);
+                break;
+            case "÷":
+                result = Double.parseDouble(num1) / Double.parseDouble(num2);
+                break;
+            case "×":
+                result = Double.parseDouble(num1) * Double.parseDouble(num2);
+                break;
+        }
+
+        return result;
     }
 }
