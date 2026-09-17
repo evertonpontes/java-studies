@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class Calculator implements ActionListener {
     int boardWidth = 360;
@@ -18,7 +17,7 @@ public class Calculator implements ActionListener {
     Color customGreen = Color.decode("#0fbd66");
 
     JFrame f = new JFrame("Simple Calculator");
-    JLabel displayLabel = new JLabel();
+    JTextField displayField = new JTextField();
     JPanel displayPanel = new JPanel();
     JPanel buttonsPanel = new JPanel();
 
@@ -51,15 +50,18 @@ public class Calculator implements ActionListener {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setLayout(new BorderLayout());
 
-        displayLabel.setBackground(customBlack);
-        displayLabel.setForeground(Color.white);
-        displayLabel.setFont(new Font("Arial", Font.PLAIN, 80));
-        displayLabel.setHorizontalAlignment(JLabel.RIGHT);
-        displayLabel.setText("0");
-        displayLabel.setOpaque(true);
+        displayField.setBackground(customBlack);
+        displayField.setForeground(Color.white);
+        displayField.setFont(new Font("Arial", Font.PLAIN, 80));
+        displayField.setHorizontalAlignment(JLabel.RIGHT);
+        displayField.setText("0");
+        displayField.setOpaque(true);
+        displayField.setEditable(false);
+        displayField.setFocusable(false);
+        displayField.setBorder(BorderFactory.createEmptyBorder());
 
         displayPanel.setLayout(new BorderLayout());
-        displayPanel.add(displayLabel);
+        displayPanel.add(displayField);
         f.add(displayPanel, BorderLayout.NORTH);
 
         buttonsPanel.setLayout(new GridLayout(6, 4));
@@ -102,12 +104,10 @@ public class Calculator implements ActionListener {
         return button;
     }
 
-    public static void main(String[] args) {
-        Calculator calculator = new Calculator();
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
+        adjustFontSize();
+
         String c = e.getActionCommand();
 
         if (c.charAt(0) >= '0' && c.charAt(0) <= '9' || c.charAt(0) == '.') {
@@ -143,7 +143,7 @@ public class Calculator implements ActionListener {
             currNumber = num;
             isTypingNumber = true;
         }
-        displayLabel.setText(currNumber);
+        displayField.setText(currNumber);
     }
 
     private void handleOperation(String op) {
@@ -151,7 +151,7 @@ public class Calculator implements ActionListener {
             double result = calculateOperation(prevNumber, pendingOperation, currNumber);
             prevNumber = new DecimalFormat("#.############").format(result).replace(',', '.');
             currNumber = new DecimalFormat("#.############").format(result).replace(',', '.');
-            displayLabel.setText(currNumber);
+            displayField.setText(currNumber);
         }
         else if (isOperationCompleted) {
             currNumber = "0";
@@ -165,7 +165,7 @@ public class Calculator implements ActionListener {
     }
 
     private void handleEqual() {
-        double result = 0;
+        double result;
 
         if (!pendingOperation.isEmpty()) {
             isTypingNumber = false;
@@ -175,7 +175,7 @@ public class Calculator implements ActionListener {
             result = Double.parseDouble(currNumber);
         }
         String resultValue = new DecimalFormat("#.############").format(result).replace(',', '.');
-        displayLabel.setText(resultValue);
+        displayField.setText(resultValue);
         prevNumber = resultValue;
         isOperationCompleted = true;
     }
@@ -187,7 +187,7 @@ public class Calculator implements ActionListener {
         prevNumber = "";
         pendingOperation = "";
 
-        displayLabel.setText("0");
+        displayField.setText("0");
     }
 
     private void handleSignal() {
@@ -197,7 +197,7 @@ public class Calculator implements ActionListener {
         else {
             currNumber = "-" + currNumber;
         }
-        displayLabel.setText(currNumber);
+        displayField.setText(currNumber);
     }
 
     private void handlePercentage() {
@@ -208,7 +208,7 @@ public class Calculator implements ActionListener {
         } else {
             currNumber = "0";
         }
-        displayLabel.setText(currNumber);
+        displayField.setText(currNumber);
     }
 
     private void handleSqrt() {
@@ -219,7 +219,7 @@ public class Calculator implements ActionListener {
         } else {
             currNumber = "0";
         }
-        displayLabel.setText(currNumber);
+        displayField.setText(currNumber);
     }
 
     private void handleMemory(String c) {
@@ -228,30 +228,30 @@ public class Calculator implements ActionListener {
             case "MR" -> {
                 if (!memory.isEmpty()) {
                     currNumber = memory;
-                    displayLabel.setText(currNumber);
+                    displayField.setText(currNumber);
                 }
             }
             case "M+" -> {
                 if (!memory.isEmpty()) {
                     double memoryParsed = Double.parseDouble(memory);
-                    double displayTextParsed = Double.parseDouble(displayLabel.getText());
+                    double displayTextParsed = Double.parseDouble(displayField.getText());
                     double result = memoryParsed + displayTextParsed;
                     memory = new DecimalFormat("#.############").format(result).replace(',', '.');
                 } else {
-                    memory = displayLabel.getText();
+                    memory = displayField.getText();
                 }
             }
             case "M-" -> {
                 if (!memory.isEmpty()) {
                     double memoryParsed = Double.parseDouble(memory);
-                    double displayTextParsed = Double.parseDouble(displayLabel.getText());
+                    double displayTextParsed = Double.parseDouble(displayField.getText());
                     double result = memoryParsed - displayTextParsed;
                     memory = new DecimalFormat("#.############").format(result).replace(',', '.');
                 } else {
-                    if (displayLabel.getText().charAt(0) == '-') {
-                        memory = displayLabel.getText().replace("-", "");
+                    if (displayField.getText().charAt(0) == '-') {
+                        memory = displayField.getText().replace("-", "");
                     } else {
-                        memory = "-" + displayLabel.getText();
+                        memory = "-" + displayField.getText();
                     }
                 }
             }
@@ -267,5 +267,29 @@ public class Calculator implements ActionListener {
             case "×" -> Double.parseDouble(num1) * Double.parseDouble(num2);
             default -> 0;
         };
+    }
+
+    private void adjustFontSize() {
+        String text = displayField.getText();
+
+        int maxWidth = displayField.getWidth() - 60;
+        int fontSize = 80;
+
+        Font font = displayField.getFont();
+
+        while (fontSize > 12) {
+            Font testFont = font.deriveFont((float) fontSize);
+
+            FontMetrics metrics = displayField.getFontMetrics(testFont);
+
+            if (metrics.stringWidth(text) <= maxWidth) {
+                displayField.setFont(testFont);
+                return;
+            }
+
+            fontSize--;
+        }
+
+        displayField.setFont(font.deriveFont(12f));
     }
 }
