@@ -1,0 +1,3 @@
+db.url=jdbc:mysql://localhost:3306/school_manager
+db.user=school
+db.password=your_password

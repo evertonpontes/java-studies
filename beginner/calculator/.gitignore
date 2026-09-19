@@ -27,8 +27,5 @@ bin/
 ### VS Code ###
 .vscode/
 
-### Generated application data ###
-expenses.csv
-
 ### Mac OS ###
 .DS_Store
