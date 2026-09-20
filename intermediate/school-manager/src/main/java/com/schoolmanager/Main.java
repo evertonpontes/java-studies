@@ -1,18 +1,36 @@
 package com.schoolmanager;
 
-import java.sql.Connection;
+import java.time.LocalDate;
 
-import com.schoolmanager.config.DatabaseConnection;
+import com.schoolmanager.model.Student;
+import com.schoolmanager.repository.StudentRepositoryImpl;
 
 public class Main {
     public static void main(String[] args) {
         
-        try (Connection connection = DatabaseConnection.getConnection()) {
+        StudentRepositoryImpl studentRepository = new StudentRepositoryImpl();
 
-            System.out.println("Database connection successful!");
-        } catch (Exception e) {
-            System.err.println("Database connection failed!");
-            e.printStackTrace();
-        }
+        Student student = new Student(
+            "Student to delete",
+            "delete@example.com",
+            LocalDate.of(2000, 1, 1)
+        );
+
+        Student savedStudent = studentRepository.save(student);
+
+        System.out.println(
+            "Created student with ID: "
+                + savedStudent.getId()
+        );
+
+        studentRepository.deleteById(savedStudent.getId());
+
+        System.out.println("Student deleted successfully!");
+
+        boolean exists = studentRepository
+            .findById(savedStudent.getId())
+            .isPresent();
+
+        System.out.println("Student exists: " + exists);
     }
 }
