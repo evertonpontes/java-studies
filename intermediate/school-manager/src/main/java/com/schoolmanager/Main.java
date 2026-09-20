@@ -1,36 +1,22 @@
 package com.schoolmanager;
 
-import java.time.LocalDate;
+import java.util.Optional;
 
-import com.schoolmanager.model.Student;
-import com.schoolmanager.repository.StudentRepositoryImpl;
+import com.schoolmanager.model.Teacher;
+import com.schoolmanager.repository.TeacherRepository;
+import com.schoolmanager.repository.TeacherRepositoryImpl;
 
 public class Main {
+
     public static void main(String[] args) {
-        
-        StudentRepositoryImpl studentRepository = new StudentRepositoryImpl();
 
-        Student student = new Student(
-            "Student to delete",
-            "delete@example.com",
-            LocalDate.of(2000, 1, 1)
-        );
+        TeacherRepository teacherRepository = new TeacherRepositoryImpl();
 
-        Student savedStudent = studentRepository.save(student);
+        teacherRepository.deleteById(3L);
 
-        System.out.println(
-            "Created student with ID: "
-                + savedStudent.getId()
-        );
+        Optional<Teacher> teacher = teacherRepository.findById(3L);
 
-        studentRepository.deleteById(savedStudent.getId());
+        System.out.println("Teacher exists: " + teacher.isPresent());
 
-        System.out.println("Student deleted successfully!");
-
-        boolean exists = studentRepository
-            .findById(savedStudent.getId())
-            .isPresent();
-
-        System.out.println("Student exists: " + exists);
     }
 }
