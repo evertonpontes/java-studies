@@ -3,56 +3,83 @@ package com.schoolmanager;
 import java.util.List;
 import java.util.Optional;
 
-import com.schoolmanager.model.Subject;
-import com.schoolmanager.repository.SubjectRepositoryImpl;
+import com.schoolmanager.model.Classroom;
+import com.schoolmanager.repository.ClassroomRepositoryImpl;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        SubjectRepositoryImpl repository = new SubjectRepositoryImpl();
+        ClassroomRepositoryImpl repository = new ClassroomRepositoryImpl();
 
-        Subject subject = new Subject("Mathematics", null);
+        Classroom classroom = new Classroom(
+                "A",
+                1L,
+                3L
+        );
 
-        Subject savedSubject = repository.save(subject);
+        Classroom savedClassroom = repository.save(classroom);
 
-        System.out.println("Subject saved successfully: " + savedSubject.getId());
+        System.out.println("Classroom saved successfully: " + savedClassroom.getId());
 
-        repository.findById(savedSubject.getId())
+        repository.findById(savedClassroom.getId())
                 .ifPresent(value -> {
-                    System.out.println("Subject found: ");
+                    System.out.println("Classroom found: ");
                     System.out.println("ID: " + value.getId());
                     System.out.println("NAME: " + value.getName());
-                    System.out.println("DESCRIPTION: " + value.getDescription());
+                    System.out.println("TEACHER_ID: " + value.getTeacherId());
+                    System.out.println("SUBJECT_ID: " + value.getSubjectId());
                     System.out.println("CREATED_AT: " + value.getCreatedAt());
                 });
 
-        List<Subject> subjects = repository.findAll();
+        Classroom classroom2 = new Classroom(
+                "B",
+                1L,
+                3L
+        );
 
-        for (Subject s : subjects) {
+        Classroom savedClassroom2 = repository.save(classroom2);
+
+        Classroom classroom3 = new Classroom(
+                "C",
+                1L,
+                3L
+        );
+
+        Classroom savedClassroom3 = repository.save(classroom3);
+
+        List<Classroom> Classrooms = repository.findAll();
+
+        for (Classroom s : Classrooms) {
             System.out.println("--------------------------");
+            System.out.println("Classroom found: ");
             System.out.println("ID: " + s.getId());
             System.out.println("NAME: " + s.getName());
-            System.out.println("DESCRIPTION: " + s.getDescription());
+            System.out.println("TEACHER_ID: " + s.getTeacherId());
+            System.out.println("SUBJECT_ID: " + s.getSubjectId());
             System.out.println("CREATED_AT: " + s.getCreatedAt());
         }
 
-        repository.update(savedSubject);
+        savedClassroom.setName("A (Updated)");
+        savedClassroom.setTeacherId(2L);
 
-        repository.findById(savedSubject.getId())
+        repository.update(savedClassroom);
+
+        repository.findById(savedClassroom.getId())
                 .ifPresent(value -> {
-                    System.out.println("Subject updated found: ");
+                    System.out.println("Classroom found: ");
                     System.out.println("ID: " + value.getId());
                     System.out.println("NAME: " + value.getName());
-                    System.out.println("DESCRIPTION: " + value.getDescription());
+                    System.out.println("TEACHER_ID: " + value.getTeacherId());
+                    System.out.println("SUBJECT_ID: " + value.getSubjectId());
                     System.out.println("CREATED_AT: " + value.getCreatedAt());
                 });
 
-        repository.deleteById(savedSubject.getId());
+        repository.deleteById(savedClassroom3.getId());
 
-        Optional<Subject> deletedSubject = repository.findById(savedSubject.getId());
+        Optional<Classroom> deletedClassroom3 = repository.findById(savedClassroom3.getId());
 
-        System.out.println("Subject deleted exists: " + deletedSubject.isPresent());
+        System.out.println("Classroom deleted exists: " + deletedClassroom3.isPresent());
 
     }
 }
