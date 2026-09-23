@@ -1,10 +1,10 @@
 package com.schoolmanager;
 
-import java.util.List;
-
-import com.schoolmanager.model.Enrollment;
-import com.schoolmanager.repository.EnrollmentRepositoryImpl;
+import com.schoolmanager.ui.MainFrame;
 
 public class Main {
 
+    public static void main(String[] args) {
+        MainFrame.showApplication();
+    }
 }
