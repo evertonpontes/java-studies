@@ -39,7 +39,7 @@ public class NavigationPanel extends JPanel {
             Runnable onEnrollments,
             Runnable onGrades
     ) {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 20));
         setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
         setBackground(SIDEBAR_COLOR);
 

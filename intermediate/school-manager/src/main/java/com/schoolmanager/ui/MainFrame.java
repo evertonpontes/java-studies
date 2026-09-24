@@ -9,12 +9,17 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.schoolmanager.config.ApplicationConfig;
+
 public class MainFrame extends JFrame {
 
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
+    private final ApplicationConfig applicationConfig;
 
-    public MainFrame() {
+    public MainFrame(ApplicationConfig applicationConfig) {
+        this.applicationConfig = applicationConfig;
+
         this.setTitle("School Manager");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(1000, 700);
@@ -42,7 +47,9 @@ public class MainFrame extends JFrame {
 
     private void createContent() {
         contentPanel.add(
-                createPlaceholder("Students"),
+                new StudentPanel(
+                        applicationConfig.studentApplication()
+                ),
                 "students"
         );
 
@@ -91,7 +98,10 @@ public class MainFrame extends JFrame {
 
     public static void showApplication() {
         SwingUtilities.invokeLater(() -> {
-            MainFrame frame = new MainFrame();
+            ApplicationConfig applicationConfig = new ApplicationConfig();
+
+            MainFrame frame = new MainFrame(applicationConfig);
+
             frame.setVisible(true);
         });
     }
