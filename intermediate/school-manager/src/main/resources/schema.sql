@@ -64,4 +64,5 @@ CREATE TABLE grades (
     CONSTRAINT fk_grades_enrollment
     FOREIGN KEY (enrollment_id)
     REFERENCES enrollments(id)
+    ON DELETE CASCADE
 );

@@ -10,16 +10,7 @@ import java.awt.Insets;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -172,6 +163,61 @@ public class StudentPanel extends JPanel {
                 });
         }
 
+        private void openDeleteStudentDialog(int row) {
+                Long studentId = (Long) studentTable.getValueAt(row, 0);
+                String studentName = (String) studentTable.getValueAt(row, 1);
+
+                int result = JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to delete " + studentName + "?",
+                        "Delete Student",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                if (result != JOptionPane.YES_OPTION) {
+                        return;
+                }
+
+                try {
+                        studentApplication.delete(studentId);
+                        loadStudents();
+
+                } catch (RuntimeException e) {
+
+                        if (hasIntegrityConstraintViolation(e)) {
+                                JOptionPane.showMessageDialog(
+                                        this,
+                                        "This student cannot be deleted because they have enrollments.\n\n"
+                                                + "Please delete the student's enrollments before deleting the student.",
+                                        "Cannot Delete Student",
+                                        JOptionPane.WARNING_MESSAGE
+                                );
+                        } else {
+                                JOptionPane.showMessageDialog(
+                                        this,
+                                        "An unexpected error occurred while deleting the student.",
+                                        "Delete Student",
+                                        JOptionPane.ERROR_MESSAGE
+                                );
+                        }
+                }
+        }
+
+        private boolean hasIntegrityConstraintViolation(Throwable throwable) {
+                Throwable cause = throwable;
+
+                while (cause != null) {
+                        if (cause instanceof java.sql.SQLIntegrityConstraintViolationException) {
+                                return true;
+                        }
+
+                        cause = cause.getCause();
+                }
+
+                return false;
+        }
+
         private void loadStudents() {
                 tableModel.setRowCount(0);
 
@@ -311,7 +357,7 @@ public class StudentPanel extends JPanel {
                                 setBorder(
                                                 BorderFactory.createCompoundBorder(
                                                                 BorderFactory.createMatteBorder(0, 0, 1, 0,
-                                                                                new Color(161, 161, 161)),
+                                                                                new Color(150, 150, 150)),
                                                                 BorderFactory.createEmptyBorder(
                                                                                 8, 8, 8, 8)));
 
@@ -336,25 +382,22 @@ public class StudentPanel extends JPanel {
                                 .setCellEditor(new ActionEditor());
         }
 
-        private class ActionRenderer extends JPanel implements TableCellRenderer {
+        private static class ActionRenderer extends JPanel implements TableCellRenderer {
 
-                private final JButton editButton;
-                private final JButton deleteButton;
-
-                public ActionRenderer() {
+            public ActionRenderer() {
                         setLayout(
                                         new FlowLayout(
                                                         FlowLayout.RIGHT,
                                                         3,
                                                         2));
 
-                        editButton = createButton(
-                                        "Edit",
-                                        EDIT_COLOR);
+                        JButton editButton = createButton(
+                            "Edit",
+                            EDIT_COLOR);
 
-                        deleteButton = createButton(
-                                        "Delete",
-                                        DELETE_COLOR);
+                        JButton deleteButton = createButton(
+                                "Delete",
+                                DELETE_COLOR);
 
                         add(editButton);
                         add(deleteButton);
@@ -362,7 +405,7 @@ public class StudentPanel extends JPanel {
                         setBorder(
                                         BorderFactory.createCompoundBorder(
                                                         BorderFactory.createMatteBorder(0, 0, 1, 0,
-                                                                        new Color(161, 161, 161)),
+                                                                        new Color(150, 150, 150)),
                                                         BorderFactory.createEmptyBorder(
                                                                         4, 4, 4, 4)));
 
@@ -411,8 +454,6 @@ public class StudentPanel extends JPanel {
         private class ActionEditor extends AbstractCellEditor implements TableCellEditor {
 
                 private final JPanel panel;
-                private final JButton editButton;
-                private final JButton deleteButton;
                 private int row;
 
                 public ActionEditor() {
@@ -426,12 +467,12 @@ public class StudentPanel extends JPanel {
                         panel.setBorder(
                                         BorderFactory.createCompoundBorder(
                                                         BorderFactory.createMatteBorder(0, 0, 1, 0,
-                                                                        new Color(161, 161, 161)),
+                                                                        new Color(150, 150, 150)),
                                                         BorderFactory.createEmptyBorder(
                                                                         4, 4, 4, 4)));
 
-                        editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
-                        deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
+                    JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
+                    JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
 
                         editButton.addActionListener(_ -> {
                                 fireEditingStopped();
@@ -440,6 +481,7 @@ public class StudentPanel extends JPanel {
 
                         deleteButton.addActionListener(_ -> {
                                 fireEditingStopped();
+                                openDeleteStudentDialog(row);
                         });
 
                         panel.add(editButton);
