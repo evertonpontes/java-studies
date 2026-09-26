@@ -96,9 +96,9 @@ public class StudentPanel extends JPanel {
                 titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
 
                 titlePanel.setBackground(WHITE);
-                titlePanel.add(title, BorderLayout.CENTER);
-                title.add(Box.createVerticalStrut(4));
-                titlePanel.add(description, BorderLayout.SOUTH);
+                titlePanel.add(title);
+                titlePanel.add(Box.createVerticalStrut(4));
+                titlePanel.add(description);
 
                 header.add(titlePanel, BorderLayout.WEST);
 
@@ -128,8 +128,25 @@ public class StudentPanel extends JPanel {
                                                 BorderFactory.createEmptyBorder(0, 10, 0, 10)));
 
                 addButton.setHorizontalAlignment(SwingConstants.CENTER);
+                addButton.addActionListener(event -> openCreateStudentDialog());
 
                 return addButton;
+        }
+
+        private void openCreateStudentDialog() {
+                StudentFormDialog dialog = new StudentFormDialog(
+                                javax.swing.SwingUtilities.getWindowAncestor(this));
+
+                dialog.setVisible(true);
+
+                Student student = dialog.getStudent();
+
+                if (student == null) {
+                        return;
+                }
+
+                studentApplication.create(student);
+                loadStudents();
         }
 
         private void loadStudents() {
