@@ -41,10 +41,20 @@ public class StudentFormDialog extends JDialog {
     private final PlaceholderTextField emailField;
     private final PlaceholderTextField birthDateField;
 
+    private final boolean editMode;
+    private final Student originalStudent;
+
     private Student student;
 
     public StudentFormDialog(Window owner) {
-        super(owner, "Add Student", ModalityType.APPLICATION_MODAL);
+        this(owner, null);
+    }
+
+    public StudentFormDialog(Window owner, Student student) {
+        super(owner, student == null ? "Add Student" : "Edit Student", ModalityType.APPLICATION_MODAL);
+
+        this.editMode = student != null;
+        this.originalStudent = student;
 
         nameField = new PlaceholderTextField("Enter student name");
         emailField = new PlaceholderTextField("Enter student email");
@@ -52,6 +62,10 @@ public class StudentFormDialog extends JDialog {
 
         configureDialog();
         createContent();
+
+        if (editMode) {
+            fillForm(student);
+        }
     }
 
     private void configureDialog() {
@@ -78,11 +92,12 @@ public class StudentFormDialog extends JDialog {
         panel.setBackground(WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel title = new JLabel("Add Student");
+        JLabel title = new JLabel(editMode ? "Edit Student" : "Add Student");
         title.setFont(INTER_SEMI_BOLD);
         title.setForeground(PRIMARY_COLOR);
 
-        JLabel description = new JLabel("Enter the student's information");
+        JLabel description = new JLabel(
+                editMode ? "Update the student's information" : "Enter the student's information");
         description.setFont(INTER_REGULAR);
         description.setForeground(SECONDARY_TEXT_COLOR);
 
@@ -149,7 +164,7 @@ public class StudentFormDialog extends JDialog {
         JButton cancelButton = createButton("Cancel", new Color(235, 237, 241), PRIMARY_COLOR);
         cancelButton.addActionListener(_ -> dispose());
 
-        JButton saveButton = createButton("Save", PRIMARY_COLOR, WHITE);
+        JButton saveButton = createButton(editMode ? "Update" : "Save", PRIMARY_COLOR, WHITE);
         saveButton.addActionListener(_ -> saveStudent());
 
         panel.add(cancelButton);
@@ -172,6 +187,12 @@ public class StudentFormDialog extends JDialog {
         return button;
     }
 
+    private void fillForm(Student student) {
+        nameField.setText(student.getName());
+        emailField.setText(student.getEmail());
+        birthDateField.setText(student.getBirthDate().format(DATE_FORMATTER));
+    }
+
     private void saveStudent() {
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
@@ -191,7 +212,17 @@ public class StudentFormDialog extends JDialog {
             return;
         }
 
-        student = new Student(name, email, birthDate);
+        if (editMode) {
+            student = new Student(
+                    originalStudent.getId(),
+                    name,
+                    email,
+                    birthDate,
+                    originalStudent.getCreatedAt());
+        } else {
+            student = new Student(name, email, birthDate);
+        }
+
         dispose();
     }
 
