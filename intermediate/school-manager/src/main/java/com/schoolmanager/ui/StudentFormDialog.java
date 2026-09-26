@@ -37,18 +37,18 @@ public class StudentFormDialog extends JDialog {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-    private final JTextField nameField;
-    private final JTextField emailField;
-    private final JTextField birthDateField;
+    private final PlaceholderTextField nameField;
+    private final PlaceholderTextField emailField;
+    private final PlaceholderTextField birthDateField;
 
     private Student student;
 
     public StudentFormDialog(Window owner) {
         super(owner, "Add Student", ModalityType.APPLICATION_MODAL);
 
-        nameField = new JTextField();
-        emailField = new JTextField();
-        birthDateField = new JTextField();
+        nameField = new PlaceholderTextField("Enter student name");
+        emailField = new PlaceholderTextField("Enter student email");
+        birthDateField = new PlaceholderTextField("e.g. yyyy/MM/dd");
 
         configureDialog();
         createContent();
@@ -56,7 +56,7 @@ public class StudentFormDialog extends JDialog {
 
     private void configureDialog() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(460, 340);
+        setSize(540, 460);
         setLocationRelativeTo(getOwner());
         setResizable(false);
     }
@@ -106,8 +106,8 @@ public class StudentFormDialog extends JDialog {
         constraints.insets = new Insets(0, 0, 12, 0);
 
         addField(panel, constraints, 0, "Name", nameField);
-        addField(panel, constraints, 1, "Email", emailField);
-        addField(panel, constraints, 2, "Birth Date", birthDateField);
+        addField(panel, constraints, 2, "Email", emailField);
+        addField(panel, constraints, 4, "Birth Date", birthDateField);
 
         return panel;
     }
@@ -147,10 +147,10 @@ public class StudentFormDialog extends JDialog {
         panel.setBackground(WHITE);
 
         JButton cancelButton = createButton("Cancel", new Color(235, 237, 241), PRIMARY_COLOR);
-        cancelButton.addActionListener(event -> dispose());
+        cancelButton.addActionListener(_ -> dispose());
 
         JButton saveButton = createButton("Save", PRIMARY_COLOR, WHITE);
-        saveButton.addActionListener(event -> saveStudent());
+        saveButton.addActionListener(_ -> saveStudent());
 
         panel.add(cancelButton);
         panel.add(saveButton);
