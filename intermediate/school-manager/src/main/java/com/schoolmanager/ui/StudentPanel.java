@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -21,6 +22,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import com.schoolmanager.application.StudentApplication;
@@ -149,6 +151,27 @@ public class StudentPanel extends JPanel {
                 loadStudents();
         }
 
+        private void openEditStudentDialog(int row) {
+                Long studentId = (Long) studentTable.getValueAt(row, 0);
+
+                studentApplication.findById(studentId).ifPresent(student -> {
+                        StudentFormDialog dialog = new StudentFormDialog(
+                                        javax.swing.SwingUtilities.getWindowAncestor(this),
+                                        student);
+
+                        dialog.setVisible(true);
+
+                        Student updatedStudent = dialog.getStudent();
+
+                        if (updatedStudent == null) {
+                                return;
+                        }
+
+                        studentApplication.update(updatedStudent);
+                        loadStudents();
+                });
+        }
+
         private void loadStudents() {
                 tableModel.setRowCount(0);
 
@@ -180,7 +203,7 @@ public class StudentPanel extends JPanel {
                                 0) {
                         @Override
                         public boolean isCellEditable(int row, int column) {
-                                return false;
+                                return column == 4;
                         }
 
                 };
@@ -307,12 +330,16 @@ public class StudentPanel extends JPanel {
                 studentTable.getColumnModel()
                                 .getColumn(4)
                                 .setCellRenderer(new ActionRenderer());
+
+                studentTable.getColumnModel()
+                                .getColumn(4)
+                                .setCellEditor(new ActionEditor());
         }
 
         private class ActionRenderer extends JPanel implements TableCellRenderer {
 
-                JButton editButton;
-                JButton deleteButton;
+                private final JButton editButton;
+                private final JButton deleteButton;
 
                 public ActionRenderer() {
                         setLayout(
@@ -379,5 +406,77 @@ public class StudentPanel extends JPanel {
                         return this;
                 }
 
+        }
+
+        private class ActionEditor extends AbstractCellEditor implements TableCellEditor {
+
+                private final JPanel panel;
+                private final JButton editButton;
+                private final JButton deleteButton;
+                private int row;
+
+                public ActionEditor() {
+                        panel = new JPanel(
+                                        new FlowLayout(
+                                                        FlowLayout.RIGHT,
+                                                        3,
+                                                        2));
+
+                        panel.setBackground(WHITE);
+                        panel.setBorder(
+                                        BorderFactory.createCompoundBorder(
+                                                        BorderFactory.createMatteBorder(0, 0, 1, 0,
+                                                                        new Color(161, 161, 161)),
+                                                        BorderFactory.createEmptyBorder(
+                                                                        4, 4, 4, 4)));
+
+                        editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
+                        deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
+
+                        editButton.addActionListener(_ -> {
+                                fireEditingStopped();
+                                openEditStudentDialog(row);
+                        });
+
+                        deleteButton.addActionListener(_ -> {
+                                fireEditingStopped();
+                        });
+
+                        panel.add(editButton);
+                        panel.add(deleteButton);
+                }
+
+                private JButton createButton(String text, Color backgroundColor, Color foregroundColor) {
+                        JButton button = new JButton(text);
+
+                        button.setBackground(backgroundColor);
+                        button.setForeground(foregroundColor);
+                        button.setFont(INTER_MEDIUM);
+                        button.setBorder(
+                                        BorderFactory.createCompoundBorder(
+                                                        BorderFactory.createEmptyBorder(0, 10, 0, 10),
+                                                        BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+                        button.setMargin(new Insets(0, 0, 0, 0));
+                        button.setFocusPainted(false);
+                        button.setFocusable(false);
+
+                        return button;
+                }
+
+                @Override
+                public Component getTableCellEditorComponent(
+                                JTable table,
+                                Object value,
+                                boolean isSelected,
+                                int row,
+                                int column) {
+                        this.row = row;
+                        return panel;
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                        return "";
+                }
         }
 }
