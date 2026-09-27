@@ -9,12 +9,14 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.util.List;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -22,6 +24,8 @@ import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import com.schoolmanager.application.SubjectApplication;
 import com.schoolmanager.model.Subject;
@@ -73,12 +77,10 @@ public class SubjectPanel extends JPanel {
         JLabel title = new JLabel("Subjects");
         title.setForeground(PRIMARY_COLOR);
         title.setFont(INTER_SEMI_BOLD);
-        title.setHorizontalAlignment(SwingConstants.LEFT);
 
         JLabel description = new JLabel("Manage subjects");
         description.setForeground(SECONDARY_TEXT_COLOR);
         description.setFont(INTER_REGULAR);
-        description.setHorizontalAlignment(SwingConstants.LEFT);
 
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
@@ -99,16 +101,98 @@ public class SubjectPanel extends JPanel {
         addButton.setFont(INTER_MEDIUM);
         addButton.setFocusPainted(false);
         addButton.setFocusable(false);
-        addButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 0, 0, 0),
-                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
-        addButton.setHorizontalAlignment(SwingConstants.CENTER);
-        addButton.setEnabled(false);
+        addButton.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        addButton.addActionListener(_ -> openCreateSubjectDialog());
 
         buttonPanel.add(addButton);
         header.add(buttonPanel, BorderLayout.EAST);
 
         return header;
+    }
+
+    private void openCreateSubjectDialog() {
+        SubjectFormDialog dialog = new SubjectFormDialog(
+                javax.swing.SwingUtilities.getWindowAncestor(this));
+
+        dialog.setVisible(true);
+
+        Subject subject = dialog.getSubject();
+        if (subject == null) {
+            return;
+        }
+
+        subjectApplication.create(subject);
+        loadSubjects();
+    }
+
+    private void openEditSubjectDialog(int row) {
+        Long subjectId = (Long) subjectTable.getValueAt(row, 0);
+
+        subjectApplication.findById(subjectId).ifPresent(subject -> {
+            SubjectFormDialog dialog = new SubjectFormDialog(
+                    javax.swing.SwingUtilities.getWindowAncestor(this),
+                    subject);
+
+            dialog.setVisible(true);
+
+            Subject updatedSubject = dialog.getSubject();
+            if (updatedSubject == null) {
+                return;
+            }
+
+            subjectApplication.update(updatedSubject);
+            loadSubjects();
+        });
+    }
+
+    private void openDeleteSubjectDialog(int row) {
+        Long subjectId = (Long) subjectTable.getValueAt(row, 0);
+        String subjectName = (String) subjectTable.getValueAt(row, 1);
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete " + subjectName + "?",
+                "Delete Subject",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (result != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            subjectApplication.delete(subjectId);
+            loadSubjects();
+        } catch (RuntimeException e) {
+            if (hasIntegrityConstraintViolation(e)) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "This subject cannot be deleted because it has related records.\n\n"
+                                + "Please remove the related records before deleting the subject.",
+                        "Cannot Delete Subject",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "An unexpected error occurred while deleting the subject.",
+                        "Delete Subject",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private boolean hasIntegrityConstraintViolation(Throwable throwable) {
+        Throwable cause = throwable;
+
+        while (cause != null) {
+            if (cause instanceof java.sql.SQLIntegrityConstraintViolationException) {
+                return true;
+            }
+
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
     private void loadSubjects() {
@@ -135,7 +219,7 @@ public class SubjectPanel extends JPanel {
                 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column == 3;
             }
         };
     }
@@ -153,7 +237,6 @@ public class SubjectPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         container.add(scrollPane, BorderLayout.CENTER);
-
         return container;
     }
 
@@ -166,6 +249,7 @@ public class SubjectPanel extends JPanel {
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(150, 150, 150)),
                 BorderFactory.createEmptyBorder(0, 10, 0, 10)));
+        searchField.setEnabled(false);
 
         searchTypeComboBox.setUI(new BasicComboBoxUI() {
             @Override
@@ -187,8 +271,6 @@ public class SubjectPanel extends JPanel {
         searchTypeComboBox.setFont(INTER_REGULAR);
         searchTypeComboBox.setBackground(WHITE);
         searchTypeComboBox.setFocusable(false);
-
-        searchField.setEnabled(false);
         searchTypeComboBox.setEnabled(false);
 
         panel.add(searchField, BorderLayout.CENTER);
@@ -208,6 +290,7 @@ public class SubjectPanel extends JPanel {
 
         configureTableHeader();
         configureCellRenderers();
+        configureActionCell();
     }
 
     private void configureTableHeader() {
@@ -227,7 +310,6 @@ public class SubjectPanel extends JPanel {
                 setForeground(WHITE);
                 setFont(INTER_MEDIUM);
                 setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-
                 return component;
             }
         };
@@ -258,7 +340,6 @@ public class SubjectPanel extends JPanel {
                         BorderFactory.createMatteBorder(
                                 0, 0, 1, 0, new Color(150, 150, 150)),
                         BorderFactory.createEmptyBorder(8, 8, 8, 8)));
-
                 return component;
             }
         };
@@ -266,36 +347,30 @@ public class SubjectPanel extends JPanel {
         for (int i = 0; i < 4; i++) {
             subjectTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
-
-        subjectTable.getColumnModel().getColumn(3).setCellRenderer(new ActionRenderer());
     }
 
-    private static class ActionRenderer extends JPanel
-            implements javax.swing.table.TableCellRenderer {
+    private void configureActionCell() {
+        subjectTable.getColumnModel().getColumn(3).setCellRenderer(new ActionRenderer());
+        subjectTable.getColumnModel().getColumn(3).setCellEditor(new ActionEditor());
+    }
+
+    private static class ActionRenderer extends JPanel implements TableCellRenderer {
 
         public ActionRenderer() {
             setLayout(new FlowLayout(FlowLayout.RIGHT, 3, 2));
-            setBackground(WHITE);
 
             JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
             JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
-
-            editButton.setEnabled(false);
-            deleteButton.setEnabled(false);
 
             add(editButton);
             add(deleteButton);
 
             setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(
-                            0, 0, 1, 0, new Color(150, 150, 150)),
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
                     BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         }
 
-        private JButton createButton(
-                String text,
-                Color backgroundColor,
-                Color foregroundColor) {
+        private JButton createButton(String text, Color backgroundColor, Color foregroundColor) {
             JButton button = new JButton(text);
             button.setBackground(backgroundColor);
             button.setForeground(foregroundColor);
@@ -319,6 +394,66 @@ public class SubjectPanel extends JPanel {
                 int column) {
             setBackground(WHITE);
             return this;
+        }
+    }
+
+    private class ActionEditor extends AbstractCellEditor implements TableCellEditor {
+
+        private final JPanel panel;
+        private int row;
+
+        public ActionEditor() {
+            panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 2));
+            panel.setBackground(WHITE);
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
+                    BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+
+            JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
+            JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
+
+            editButton.addActionListener(_ -> {
+                fireEditingStopped();
+                openEditSubjectDialog(row);
+            });
+
+            deleteButton.addActionListener(_ -> {
+                fireEditingStopped();
+                openDeleteSubjectDialog(row);
+            });
+
+            panel.add(editButton);
+            panel.add(deleteButton);
+        }
+
+        private JButton createButton(String text, Color backgroundColor, Color foregroundColor) {
+            JButton button = new JButton(text);
+            button.setBackground(backgroundColor);
+            button.setForeground(foregroundColor);
+            button.setFont(INTER_MEDIUM);
+            button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(0, 10, 0, 10),
+                    BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+            button.setMargin(new Insets(0, 0, 0, 0));
+            button.setFocusPainted(false);
+            button.setFocusable(false);
+            return button;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                int row,
+                int column) {
+            this.row = row;
+            return panel;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return "";
         }
     }
 }
