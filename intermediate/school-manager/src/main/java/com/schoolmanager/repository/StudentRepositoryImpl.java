@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -100,6 +102,85 @@ public class StudentRepositoryImpl implements StudentRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Failed to find all students", e);
+        }
+    }
+
+    @Override
+    public List<Student> search(String field, String value) {
+        String column = switch (field) {
+            case "ID" -> "id";
+            case "Name" -> "name";
+            case "Email" -> "email";
+            case "Birth Date" -> "birth_date";
+            default -> throw new IllegalArgumentException(
+                    "Invalid search field: " + field
+            );
+        };
+
+        String sql;
+
+        if (column.equals("id")) {
+            sql = """
+                SELECT id, name, email, birth_date, created_at
+                FROM students
+                WHERE id = ?
+                ORDER BY id
+                """;
+        } else if (column.equals("birth_date")) {
+            sql = """
+                SELECT id, name, email, birth_date, created_at
+                FROM students
+                WHERE birth_date = ?
+                ORDER BY id
+                """;
+        } else {
+            sql = """
+                SELECT id, name, email, birth_date, created_at
+                FROM students
+                WHERE %s LIKE ?
+                ORDER BY id
+                """.formatted(column);
+        }
+
+        List<Student> students = new ArrayList<>();
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            if (column.equals("id")) {
+                statement.setLong(1, Long.parseLong(value));
+
+            } else if (column.equals("birth_date")) {
+                statement.setDate(
+                        1,
+                        Date.valueOf(
+                                LocalDate.parse(
+                                        value,
+                                        DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                                )
+                        )
+                );
+
+            } else {
+                statement.setString(1, "%" + value + "%");
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    students.add(mapRow(resultSet));
+                }
+            }
+
+            return students;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Failed to search students",
+                    e
+            );
         }
     }
 

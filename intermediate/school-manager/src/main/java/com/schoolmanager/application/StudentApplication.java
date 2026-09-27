@@ -26,6 +26,10 @@ public class StudentApplication {
         return studentService.findAll();
     }
 
+    public List<Student> search(String field, String value) {
+        return studentService.search(field, value);
+    }
+
     public void update(Student student) {
         studentService.update(student);
     }

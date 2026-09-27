@@ -13,6 +13,8 @@ public interface StudentRepository {
 
     List<Student> findAll();
 
+    List<Student> search(String field, String value);
+
     void update(Student student);
 
     void deleteById(Long id);

@@ -7,14 +7,25 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.border.Border;
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicComboBoxUI;
-import javax.swing.plaf.basic.BasicComboPopup;
-import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -65,13 +76,12 @@ public class StudentPanel extends JPanel {
 
                 searchField = new PlaceholderTextField("Search students...");
                 searchTypeComboBox = new JComboBox<>(
-                        new String[] {
-                                "ID",
-                                "Name",
-                                "Email",
-                                "Birth Date"
-                        }
-                );
+                                new String[] {
+                                                "ID",
+                                                "Name",
+                                                "Email",
+                                                "Birth Date"
+                                });
 
                 loadStudents();
                 configureTable();
@@ -184,12 +194,11 @@ public class StudentPanel extends JPanel {
                 String studentName = (String) studentTable.getValueAt(row, 1);
 
                 int result = JOptionPane.showConfirmDialog(
-                        this,
-                        "Are you sure you want to delete " + studentName + "?",
-                        "Delete Student",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE
-                );
+                                this,
+                                "Are you sure you want to delete " + studentName + "?",
+                                "Delete Student",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
 
                 if (result != JOptionPane.YES_OPTION) {
                         return;
@@ -202,20 +211,18 @@ public class StudentPanel extends JPanel {
                 } catch (RuntimeException e) {
 
                         if (hasIntegrityConstraintViolation(e)) {
-                                JOptionPane.showMessageDialog(
-                                        this,
-                                        "This student cannot be deleted because they have enrollments.\n\n"
-                                                + "Please delete the student's enrollments before deleting the student.",
-                                        "Cannot Delete Student",
-                                        JOptionPane.WARNING_MESSAGE
-                                );
+                                JOptionPane.showMessageDialog(this, """
+                                                This student cannot be deleted because they have enrollments.
+
+                                                Please delete the student's enrollments before deleting the student.""",
+                                                "Cannot Delete Student",
+                                                JOptionPane.WARNING_MESSAGE);
                         } else {
                                 JOptionPane.showMessageDialog(
-                                        this,
-                                        "An unexpected error occurred while deleting the student.",
-                                        "Delete Student",
-                                        JOptionPane.ERROR_MESSAGE
-                                );
+                                                this,
+                                                "An unexpected error occurred while deleting the student.",
+                                                "Delete Student",
+                                                JOptionPane.ERROR_MESSAGE);
                         }
                 }
         }
@@ -235,12 +242,18 @@ public class StudentPanel extends JPanel {
         }
 
         private void loadStudents() {
-                tableModel.setRowCount(0);
-
                 List<Student> students = studentApplication.findAll();
 
+                updateTable(students);
+        }
+
+        private void updateTable(List<Student> students) {
+                tableModel.setRowCount(0);
+
                 for (Student student : students) {
-                        String birthDate = student.getBirthDate().format(dateFormatter);
+
+                        String birthDate = student.getBirthDate()
+                                        .format(dateFormatter);
 
                         tableModel.addRow(
                                         new Object[] {
@@ -304,13 +317,10 @@ public class StudentPanel extends JPanel {
                 searchField.setFont(INTER_REGULAR);
 
                 searchField.setBorder(
-                        BorderFactory.createCompoundBorder(
-                                BorderFactory.createLineBorder(new Color(150, 150, 150)),
-                                BorderFactory.createEmptyBorder(
-                                        0, 10, 0, 10
-                                )
-                        )
-                );
+                                BorderFactory.createCompoundBorder(
+                                                BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                                                BorderFactory.createEmptyBorder(
+                                                                0, 10, 0, 10)));
 
                 searchTypeComboBox.setUI(new BasicComboBoxUI() {
 
@@ -319,10 +329,9 @@ public class StudentPanel extends JPanel {
                                 JButton b = new JButton("▼");
 
                                 b.setBackground(WHITE);
-                                b.setForeground(new Color(161, 161 ,161));
+                                b.setForeground(new Color(161, 161, 161));
                                 b.setBorder(
-                                        BorderFactory.createEmptyBorder()
-                                );
+                                                BorderFactory.createEmptyBorder());
 
                                 b.setFocusPainted(false);
                                 b.setFocusable(false);
@@ -331,16 +340,13 @@ public class StudentPanel extends JPanel {
                         }
                 });
 
-            searchTypeComboBox.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(new Color(150, 150, 150)),
-                            BorderFactory.createEmptyBorder(0, 8, 0, 0)
-                    )
-            );
+                searchTypeComboBox.setBorder(
+                                BorderFactory.createCompoundBorder(
+                                                BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                                                BorderFactory.createEmptyBorder(0, 8, 0, 0)));
 
                 searchTypeComboBox.setPreferredSize(
-                        new Dimension(120, 38)
-                );
+                                new Dimension(120, 38));
 
                 searchTypeComboBox.setFont(INTER_REGULAR);
                 searchTypeComboBox.setBackground(WHITE);
@@ -349,7 +355,51 @@ public class StudentPanel extends JPanel {
                 panel.add(searchField, BorderLayout.CENTER);
                 panel.add(searchTypeComboBox, BorderLayout.EAST);
 
+                searchField.addFocusListener(new FocusAdapter() {
+
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                                searchStudents();
+                        }
+                });
+
+                searchTypeComboBox.addActionListener(
+                                _ -> searchStudents());
+
                 return panel;
+        }
+
+        private void searchStudents() {
+                String value = searchField.getText().trim();
+
+                if (value.isEmpty()) {
+                        loadStudents();
+                        return;
+                }
+
+                String field = (String) searchTypeComboBox.getSelectedItem();
+
+                try {
+                        List<Student> students = studentApplication.search(field, value);
+
+                        updateTable(students);
+
+                } catch (NumberFormatException e) {
+
+                        JOptionPane.showMessageDialog(
+                                        this,
+                                        "ID must contain only numbers.",
+                                        "Invalid search",
+                                        JOptionPane.WARNING_MESSAGE);
+
+                } catch (DateTimeParseException e) {
+
+                        JOptionPane.showMessageDialog(
+                                        this,
+                                        "Birth date must use the format yyyy/MM/dd.",
+                                        "Invalid search",
+                                        JOptionPane.WARNING_MESSAGE);
+                }
         }
 
         private void configureTable() {
@@ -460,7 +510,7 @@ public class StudentPanel extends JPanel {
 
         private static class ActionRenderer extends JPanel implements TableCellRenderer {
 
-            public ActionRenderer() {
+                public ActionRenderer() {
                         setLayout(
                                         new FlowLayout(
                                                         FlowLayout.RIGHT,
@@ -468,12 +518,12 @@ public class StudentPanel extends JPanel {
                                                         2));
 
                         JButton editButton = createButton(
-                            "Edit",
-                            EDIT_COLOR);
+                                        "Edit",
+                                        EDIT_COLOR);
 
                         JButton deleteButton = createButton(
-                                "Delete",
-                                DELETE_COLOR);
+                                        "Delete",
+                                        DELETE_COLOR);
 
                         add(editButton);
                         add(deleteButton);
@@ -547,8 +597,8 @@ public class StudentPanel extends JPanel {
                                                         BorderFactory.createEmptyBorder(
                                                                         4, 4, 4, 4)));
 
-                    JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
-                    JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
+                        JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
+                        JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
 
                         editButton.addActionListener(_ -> {
                                 fireEditingStopped();
