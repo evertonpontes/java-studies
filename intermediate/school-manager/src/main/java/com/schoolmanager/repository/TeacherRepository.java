@@ -12,6 +12,8 @@ public interface TeacherRepository {
 
     List<Teacher> findAll();
 
+    List<Teacher> search(String field, String value);
+
     void update(Teacher teacher);
 
     void deleteById(Long id);
