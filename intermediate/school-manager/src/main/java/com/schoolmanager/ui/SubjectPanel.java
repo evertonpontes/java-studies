@@ -1,0 +1,324 @@
+package com.schoolmanager.ui;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Insets;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+import com.schoolmanager.application.SubjectApplication;
+import com.schoolmanager.model.Subject;
+
+public class SubjectPanel extends JPanel {
+
+    private static final Color PRIMARY_COLOR = new Color(15, 23, 43);
+    private static final Color SECONDARY_TEXT_COLOR = new Color(106, 114, 130);
+    private static final Color EDIT_COLOR = new Color(79, 146, 210);
+    private static final Color DELETE_COLOR = new Color(255, 74, 67);
+    private static final Color WHITE = Color.WHITE;
+
+    private static final Font INTER_REGULAR = new Font("Inter", Font.PLAIN, 14);
+    private static final Font INTER_MEDIUM = new Font("Inter", Font.PLAIN, 14);
+    private static final Font INTER_SEMI_BOLD = new Font("Inter", Font.BOLD, 20);
+
+    private final SubjectApplication subjectApplication;
+    private final PlaceholderTextField searchField;
+    private final JComboBox<String> searchTypeComboBox;
+    private final DefaultTableModel tableModel;
+    private final JTable subjectTable;
+
+    public SubjectPanel(SubjectApplication subjectApplication) {
+        this.subjectApplication = subjectApplication;
+
+        setLayout(new BorderLayout());
+        setBackground(WHITE);
+
+        add(createHeader(), BorderLayout.NORTH);
+
+        tableModel = createTableModel();
+        subjectTable = new JTable(tableModel);
+
+        searchField = new PlaceholderTextField("Search subjects...");
+        searchTypeComboBox = new JComboBox<>(new String[] { "ID", "Name", "Description" });
+
+        loadSubjects();
+        configureTable();
+
+        add(createTableContainer(), BorderLayout.CENTER);
+    }
+
+    private JPanel createHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setPreferredSize(new Dimension(0, 91));
+        header.setBorder(BorderFactory.createEmptyBorder(23, 40, 23, 40));
+        header.setBackground(WHITE);
+
+        JLabel title = new JLabel("Subjects");
+        title.setForeground(PRIMARY_COLOR);
+        title.setFont(INTER_SEMI_BOLD);
+        title.setHorizontalAlignment(SwingConstants.LEFT);
+
+        JLabel description = new JLabel("Manage subjects");
+        description.setForeground(SECONDARY_TEXT_COLOR);
+        description.setFont(INTER_REGULAR);
+        description.setHorizontalAlignment(SwingConstants.LEFT);
+
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setBackground(WHITE);
+        titlePanel.add(title);
+        titlePanel.add(Box.createVerticalStrut(4));
+        titlePanel.add(description);
+
+        header.add(titlePanel, BorderLayout.WEST);
+
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBackground(WHITE);
+
+        JButton addButton = new JButton("Add Subject");
+        addButton.setPreferredSize(new Dimension(113, 0));
+        addButton.setBackground(PRIMARY_COLOR);
+        addButton.setForeground(WHITE);
+        addButton.setFont(INTER_MEDIUM);
+        addButton.setFocusPainted(false);
+        addButton.setFocusable(false);
+        addButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 0, 0, 0),
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
+        addButton.setHorizontalAlignment(SwingConstants.CENTER);
+        addButton.setEnabled(false);
+
+        buttonPanel.add(addButton);
+        header.add(buttonPanel, BorderLayout.EAST);
+
+        return header;
+    }
+
+    private void loadSubjects() {
+        List<Subject> subjects = subjectApplication.findAll();
+        updateTable(subjects);
+    }
+
+    private void updateTable(List<Subject> subjects) {
+        tableModel.setRowCount(0);
+
+        for (Subject subject : subjects) {
+            tableModel.addRow(new Object[] {
+                    subject.getId(),
+                    subject.getName(),
+                    subject.getDescription(),
+                    ""
+            });
+        }
+    }
+
+    private DefaultTableModel createTableModel() {
+        return new DefaultTableModel(
+                new Object[] { "ID", "Name", "Description", "Actions" },
+                0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+    }
+
+    private JPanel createTableContainer() {
+        JPanel container = new JPanel(new BorderLayout(0, 12));
+        container.setBorder(BorderFactory.createEmptyBorder(0, 40, 0, 40));
+        container.setBackground(WHITE);
+
+        container.add(createSearchBar(), BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(subjectTable);
+        scrollPane.setBackground(WHITE);
+        scrollPane.getViewport().setBackground(WHITE);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+        container.add(scrollPane, BorderLayout.CENTER);
+
+        return container;
+    }
+
+    private JPanel createSearchBar() {
+        JPanel panel = new JPanel(new BorderLayout(8, 0));
+        panel.setBackground(WHITE);
+
+        searchField.setPreferredSize(new Dimension(0, 38));
+        searchField.setFont(INTER_REGULAR);
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
+
+        searchTypeComboBox.setUI(new BasicComboBoxUI() {
+            @Override
+            protected JButton createArrowButton() {
+                JButton button = new JButton("▼");
+                button.setBackground(WHITE);
+                button.setForeground(new Color(161, 161, 161));
+                button.setBorder(BorderFactory.createEmptyBorder());
+                button.setFocusPainted(false);
+                button.setFocusable(false);
+                return button;
+            }
+        });
+
+        searchTypeComboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                BorderFactory.createEmptyBorder(0, 8, 0, 0)));
+        searchTypeComboBox.setPreferredSize(new Dimension(120, 38));
+        searchTypeComboBox.setFont(INTER_REGULAR);
+        searchTypeComboBox.setBackground(WHITE);
+        searchTypeComboBox.setFocusable(false);
+
+        searchField.setEnabled(false);
+        searchTypeComboBox.setEnabled(false);
+
+        panel.add(searchField, BorderLayout.CENTER);
+        panel.add(searchTypeComboBox, BorderLayout.EAST);
+
+        return panel;
+    }
+
+    private void configureTable() {
+        subjectTable.setFont(INTER_MEDIUM);
+        subjectTable.setForeground(Color.BLACK);
+        subjectTable.setBackground(WHITE);
+        subjectTable.setRowHeight(32);
+        subjectTable.setShowGrid(false);
+        subjectTable.setIntercellSpacing(new Dimension(0, 0));
+        subjectTable.setFillsViewportHeight(true);
+
+        configureTableHeader();
+        configureCellRenderers();
+    }
+
+    private void configureTableHeader() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column) {
+                Component component = super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+
+                setBackground(PRIMARY_COLOR);
+                setForeground(WHITE);
+                setFont(INTER_MEDIUM);
+                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+
+                return component;
+            }
+        };
+
+        subjectTable.getTableHeader().setDefaultRenderer(renderer);
+        subjectTable.getTableHeader().setPreferredSize(new Dimension(0, 34));
+        subjectTable.getTableHeader().setResizingAllowed(false);
+        subjectTable.getTableHeader().setReorderingAllowed(false);
+    }
+
+    private void configureCellRenderers() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column) {
+                Component component = super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+
+                setBackground(WHITE);
+                setForeground(Color.BLACK);
+                setFont(INTER_MEDIUM);
+                setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(
+                                0, 0, 1, 0, new Color(150, 150, 150)),
+                        BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+
+                return component;
+            }
+        };
+
+        for (int i = 0; i < 4; i++) {
+            subjectTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
+
+        subjectTable.getColumnModel().getColumn(3).setCellRenderer(new ActionRenderer());
+    }
+
+    private static class ActionRenderer extends JPanel
+            implements javax.swing.table.TableCellRenderer {
+
+        public ActionRenderer() {
+            setLayout(new FlowLayout(FlowLayout.RIGHT, 3, 2));
+            setBackground(WHITE);
+
+            JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
+            JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
+
+            editButton.setEnabled(false);
+            deleteButton.setEnabled(false);
+
+            add(editButton);
+            add(deleteButton);
+
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(
+                            0, 0, 1, 0, new Color(150, 150, 150)),
+                    BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        }
+
+        private JButton createButton(
+                String text,
+                Color backgroundColor,
+                Color foregroundColor) {
+            JButton button = new JButton(text);
+            button.setBackground(backgroundColor);
+            button.setForeground(foregroundColor);
+            button.setFont(INTER_MEDIUM);
+            button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(0, 10, 0, 10),
+                    BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+            button.setMargin(new Insets(0, 0, 0, 0));
+            button.setFocusPainted(false);
+            button.setFocusable(false);
+            return button;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
+            setBackground(WHITE);
+            return this;
+        }
+    }
+}
