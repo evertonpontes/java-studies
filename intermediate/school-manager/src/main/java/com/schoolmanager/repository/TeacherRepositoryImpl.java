@@ -101,6 +101,64 @@ public class TeacherRepositoryImpl implements TeacherRepository {
     }
 
     @Override
+    public List<Teacher> search(String field, String value) {
+        String column = switch (field) {
+            case "ID" -> "id";
+            case "Name" -> "name";
+            case "Email" -> "email";
+            default -> throw new IllegalArgumentException(
+                    "Invalid search field: " + field
+            );
+        };
+
+        String sql;
+
+        if (column.equals("id")) {
+            sql = """
+                SELECT id, name, email, created_at
+                FROM teachers
+                WHERE id = ?
+                ORDER BY id
+                """;
+        } else {
+            sql = """
+                SELECT id, name, email, created_at
+                FROM teachers
+                WHERE %s LIKE ?
+                ORDER BY id
+                """.formatted(column);
+        }
+
+        List<Teacher> teachers = new ArrayList<>();
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            if (column.equals("id")) {
+                statement.setLong(1, Long.parseLong(value));
+            } else {
+                statement.setString(1, "%" + value + "%");
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    teachers.add(mapRow(resultSet));
+                }
+            }
+
+            return teachers;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Failed to search teachers",
+                    e
+            );
+        }
+    }
+
+    @Override
     public void update(Teacher teacher) {
 
         String sql = """
