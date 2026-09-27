@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 
 import javax.swing.AbstractCellEditor;
@@ -21,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -60,10 +63,11 @@ public class SubjectPanel extends JPanel {
         subjectTable = new JTable(tableModel);
 
         searchField = new PlaceholderTextField("Search subjects...");
-        searchTypeComboBox = new JComboBox<>(new String[] { "ID", "Name", "Description" });
+        searchTypeComboBox = new JComboBox<>(new String[] { "ID", "Name" });
 
         loadSubjects();
         configureTable();
+        configureSearch();
 
         add(createTableContainer(), BorderLayout.CENTER);
     }
@@ -112,7 +116,7 @@ public class SubjectPanel extends JPanel {
 
     private void openCreateSubjectDialog() {
         SubjectFormDialog dialog = new SubjectFormDialog(
-                javax.swing.SwingUtilities.getWindowAncestor(this));
+                SwingUtilities.getWindowAncestor(this));
 
         dialog.setVisible(true);
 
@@ -130,7 +134,7 @@ public class SubjectPanel extends JPanel {
 
         subjectApplication.findById(subjectId).ifPresent(subject -> {
             SubjectFormDialog dialog = new SubjectFormDialog(
-                    javax.swing.SwingUtilities.getWindowAncestor(this),
+                    SwingUtilities.getWindowAncestor(this),
                     subject);
 
             dialog.setVisible(true);
@@ -188,7 +192,6 @@ public class SubjectPanel extends JPanel {
             if (cause instanceof java.sql.SQLIntegrityConstraintViolationException) {
                 return true;
             }
-
             cause = cause.getCause();
         }
 
@@ -196,8 +199,37 @@ public class SubjectPanel extends JPanel {
     }
 
     private void loadSubjects() {
-        List<Subject> subjects = subjectApplication.findAll();
+        updateTable(subjectApplication.findAll());
+    }
+
+    private void searchSubjects() {
+        String value = searchField.getText().trim();
+
+        if (value.isEmpty()) {
+            loadSubjects();
+            return;
+        }
+
+        List<Subject> subjects = subjectApplication.search(
+                (String) searchTypeComboBox.getSelectedItem(),
+                value);
+
         updateTable(subjects);
+    }
+
+    private void configureSearch() {
+        searchField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                searchSubjects();
+            }
+        });
+
+        searchTypeComboBox.addActionListener(_ -> {
+            if (searchField.hasFocus()) {
+                searchSubjects();
+            }
+        });
     }
 
     private void updateTable(List<Subject> subjects) {
@@ -249,7 +281,6 @@ public class SubjectPanel extends JPanel {
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(150, 150, 150)),
                 BorderFactory.createEmptyBorder(0, 10, 0, 10)));
-        searchField.setEnabled(false);
 
         searchTypeComboBox.setUI(new BasicComboBoxUI() {
             @Override
@@ -271,7 +302,6 @@ public class SubjectPanel extends JPanel {
         searchTypeComboBox.setFont(INTER_REGULAR);
         searchTypeComboBox.setBackground(WHITE);
         searchTypeComboBox.setFocusable(false);
-        searchTypeComboBox.setEnabled(false);
 
         panel.add(searchField, BorderLayout.CENTER);
         panel.add(searchTypeComboBox, BorderLayout.EAST);
@@ -297,20 +327,16 @@ public class SubjectPanel extends JPanel {
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(
-                    JTable table,
-                    Object value,
-                    boolean isSelected,
-                    boolean hasFocus,
-                    int row,
-                    int column) {
-                Component component = super.getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
 
                 setBackground(PRIMARY_COLOR);
                 setForeground(WHITE);
                 setFont(INTER_MEDIUM);
                 setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-                return component;
+                return this;
             }
         };
 
@@ -324,13 +350,9 @@ public class SubjectPanel extends JPanel {
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(
-                    JTable table,
-                    Object value,
-                    boolean isSelected,
-                    boolean hasFocus,
-                    int row,
-                    int column) {
-                Component component = super.getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
 
                 setBackground(WHITE);
@@ -340,7 +362,7 @@ public class SubjectPanel extends JPanel {
                         BorderFactory.createMatteBorder(
                                 0, 0, 1, 0, new Color(150, 150, 150)),
                         BorderFactory.createEmptyBorder(8, 8, 8, 8)));
-                return component;
+                return this;
             }
         };
 
@@ -355,29 +377,24 @@ public class SubjectPanel extends JPanel {
     }
 
     private static class ActionRenderer extends JPanel implements TableCellRenderer {
-
         public ActionRenderer() {
             setLayout(new FlowLayout(FlowLayout.RIGHT, 3, 2));
 
-            JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
-            JButton deleteButton = createButton("Delete", DELETE_COLOR, WHITE);
-
-            add(editButton);
-            add(deleteButton);
+            add(createButton("Edit", EDIT_COLOR, PRIMARY_COLOR));
+            add(createButton("Delete", DELETE_COLOR, WHITE));
 
             setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
+                    BorderFactory.createMatteBorder(
+                            0, 0, 1, 0, new Color(150, 150, 150)),
                     BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         }
 
-        private JButton createButton(String text, Color backgroundColor, Color foregroundColor) {
+        private JButton createButton(String text, Color background, Color foreground) {
             JButton button = new JButton(text);
-            button.setBackground(backgroundColor);
-            button.setForeground(foregroundColor);
+            button.setBackground(background);
+            button.setForeground(foreground);
             button.setFont(INTER_MEDIUM);
-            button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createEmptyBorder(0, 10, 0, 10),
-                    BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+            button.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
             button.setMargin(new Insets(0, 0, 0, 0));
             button.setFocusPainted(false);
             button.setFocusable(false);
@@ -386,27 +403,23 @@ public class SubjectPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column) {
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
             setBackground(WHITE);
             return this;
         }
     }
 
     private class ActionEditor extends AbstractCellEditor implements TableCellEditor {
-
         private final JPanel panel;
         private int row;
 
-        public ActionEditor() {
+        ActionEditor() {
             panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 2));
             panel.setBackground(WHITE);
             panel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
+                    BorderFactory.createMatteBorder(
+                            0, 0, 1, 0, new Color(150, 150, 150)),
                     BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
             JButton editButton = createButton("Edit", EDIT_COLOR, PRIMARY_COLOR);
@@ -426,14 +439,12 @@ public class SubjectPanel extends JPanel {
             panel.add(deleteButton);
         }
 
-        private JButton createButton(String text, Color backgroundColor, Color foregroundColor) {
+        private JButton createButton(String text, Color background, Color foreground) {
             JButton button = new JButton(text);
-            button.setBackground(backgroundColor);
-            button.setForeground(foregroundColor);
+            button.setBackground(background);
+            button.setForeground(foreground);
             button.setFont(INTER_MEDIUM);
-            button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createEmptyBorder(0, 10, 0, 10),
-                    BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+            button.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
             button.setMargin(new Insets(0, 0, 0, 0));
             button.setFocusPainted(false);
             button.setFocusable(false);
@@ -442,11 +453,8 @@ public class SubjectPanel extends JPanel {
 
         @Override
         public Component getTableCellEditorComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                int row,
-                int column) {
+                JTable table, Object value, boolean isSelected,
+                int row, int column) {
             this.row = row;
             return panel;
         }
