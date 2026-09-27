@@ -11,6 +11,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.plaf.basic.BasicComboPopup;
+import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -39,6 +43,8 @@ public class StudentPanel extends JPanel {
 
         private final StudentApplication studentApplication;
 
+        private final PlaceholderTextField searchField;
+        private final JComboBox<String> searchTypeComboBox;
         private final DefaultTableModel tableModel;
         private final JTable studentTable;
         private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
@@ -56,6 +62,16 @@ public class StudentPanel extends JPanel {
                 tableModel = createTableModel();
 
                 studentTable = new JTable(tableModel);
+
+                searchField = new PlaceholderTextField("Search students...");
+                searchTypeComboBox = new JComboBox<>(
+                        new String[] {
+                                "ID",
+                                "Name",
+                                "Email",
+                                "Birth Date"
+                        }
+                );
 
                 loadStudents();
                 configureTable();
@@ -256,12 +272,14 @@ public class StudentPanel extends JPanel {
         }
 
         private JPanel createTableContainer() {
-                JPanel container = new JPanel(new BorderLayout());
+                JPanel container = new JPanel(new BorderLayout(0, 12));
 
                 container.setBorder(
                                 BorderFactory.createEmptyBorder(0, 40, 0, 40));
 
                 container.setBackground(WHITE);
+
+                container.add(createSearchBar(), BorderLayout.NORTH);
 
                 JScrollPane scrollPane = new JScrollPane(studentTable);
 
@@ -274,6 +292,64 @@ public class StudentPanel extends JPanel {
                 container.add(scrollPane, BorderLayout.CENTER);
 
                 return container;
+        }
+
+        private JPanel createSearchBar() {
+                JPanel panel = new JPanel(new BorderLayout(8, 0));
+
+                panel.setBackground(WHITE);
+
+                searchField.setPreferredSize(new Dimension(0, 38));
+
+                searchField.setFont(INTER_REGULAR);
+
+                searchField.setBorder(
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                                BorderFactory.createEmptyBorder(
+                                        0, 10, 0, 10
+                                )
+                        )
+                );
+
+                searchTypeComboBox.setUI(new BasicComboBoxUI() {
+
+                        @Override
+                        protected JButton createArrowButton() {
+                                JButton b = new JButton("▼");
+
+                                b.setBackground(WHITE);
+                                b.setForeground(new Color(161, 161 ,161));
+                                b.setBorder(
+                                        BorderFactory.createEmptyBorder()
+                                );
+
+                                b.setFocusPainted(false);
+                                b.setFocusable(false);
+
+                                return b;
+                        }
+                });
+
+            searchTypeComboBox.setBorder(
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(150, 150, 150)),
+                            BorderFactory.createEmptyBorder(0, 8, 0, 0)
+                    )
+            );
+
+                searchTypeComboBox.setPreferredSize(
+                        new Dimension(120, 38)
+                );
+
+                searchTypeComboBox.setFont(INTER_REGULAR);
+                searchTypeComboBox.setBackground(WHITE);
+                searchTypeComboBox.setFocusable(false);
+
+                panel.add(searchField, BorderLayout.CENTER);
+                panel.add(searchTypeComboBox, BorderLayout.EAST);
+
+                return panel;
         }
 
         private void configureTable() {
