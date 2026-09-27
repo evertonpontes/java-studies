@@ -26,6 +26,10 @@ public class SubjectService {
         return subjectRepository.findAll();
     }
 
+    public List<Subject> search(String field, String value) {
+        return subjectRepository.search(field, value);
+    }
+
     public void update(Subject subject) {
         subjectRepository.update(subject);
     }
