@@ -61,7 +61,9 @@ public class MainFrame extends JFrame {
         );
 
         contentPanel.add(
-                createPlaceholder("Subjects"),
+                new SubjectPanel(
+                        applicationConfig.subjectApplication()
+                ),
                 "subjects"
         );
 
