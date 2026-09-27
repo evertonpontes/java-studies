@@ -54,7 +54,9 @@ public class MainFrame extends JFrame {
         );
 
         contentPanel.add(
-                createPlaceholder("Teachers"),
+                new TeacherPanel(
+                        applicationConfig.teacherApplication()
+                ),
                 "teachers"
         );
 
