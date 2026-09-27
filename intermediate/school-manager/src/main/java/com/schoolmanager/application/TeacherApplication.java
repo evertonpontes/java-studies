@@ -26,6 +26,10 @@ public class TeacherApplication {
         return teacherService.findAll();
     }
 
+    public List<Teacher> search(String field, String value) {
+        return teacherService.search(field, value);
+    }
+
     public void update(Teacher teacher) {
         teacherService.update(teacher);
     }
