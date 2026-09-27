@@ -13,6 +13,8 @@ public interface SubjectRepository {
 
     List<Subject> findAll();
 
+    List<Subject> search(String field, String value);
+
     void update(Subject subject);
 
     void deleteById(Long id);
