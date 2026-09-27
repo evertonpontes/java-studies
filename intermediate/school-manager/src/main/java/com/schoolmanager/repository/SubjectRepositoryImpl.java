@@ -16,32 +16,29 @@ public class SubjectRepositoryImpl implements SubjectRepository {
 
     @Override
     public Subject save(Subject subject) {
-
         String sql = """
                     INSERT INTO subjects (name, description)
                     VALUES (?, ?)
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                sql,
-                Statement.RETURN_GENERATED_KEYS
-        )) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        sql,
+                        Statement.RETURN_GENERATED_KEYS
+                )
+        ) {
             statement.setString(1, subject.getName());
             statement.setString(2, subject.getDescription());
-
             statement.executeUpdate();
 
             try (ResultSet resultSet = statement.getGeneratedKeys()) {
-
                 if (resultSet.next()) {
                     subject.setId(resultSet.getLong(1));
                 }
             }
 
             return subject;
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to save subject", e);
         }
@@ -49,7 +46,6 @@ public class SubjectRepositoryImpl implements SubjectRepository {
 
     @Override
     public Optional<Subject> findById(Long id) {
-
         String sql = """
                 SELECT id, name, description, created_at
                 FROM subjects
@@ -57,30 +53,25 @@ public class SubjectRepositoryImpl implements SubjectRepository {
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setLong(1, id);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-
                 if (!resultSet.next()) {
                     return Optional.empty();
                 }
 
                 return Optional.of(mapRow(resultSet));
             }
-
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Failed to find subject by id: " + id,
-                    e
-            );
+            throw new RuntimeException("Failed to find subject by id: " + id, e);
         }
     }
 
     @Override
     public List<Subject> findAll() {
-
         String sql = """
                 SELECT id, name, description, created_at
                 FROM subjects
@@ -90,22 +81,75 @@ public class SubjectRepositoryImpl implements SubjectRepository {
         ArrayList<Subject> subjects = new ArrayList<>();
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql); ResultSet resultSet = statement.executeQuery()) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
+        ) {
             while (resultSet.next()) {
                 subjects.add(mapRow(resultSet));
             }
 
             return subjects;
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to find all subjects", e);
         }
     }
 
     @Override
-    public void update(Subject subject) {
+    public List<Subject> search(String field, String value) {
+        String column;
 
+        switch (field) {
+            case "ID" -> column = "id";
+            case "Name" -> column = "name";
+            default -> throw new IllegalArgumentException("Invalid search field: " + field);
+        }
+
+        String sql;
+
+        if (field.equals("ID")) {
+            sql = """
+                    SELECT id, name, description, created_at
+                    FROM subjects
+                    WHERE id = ?
+                    """;
+        } else {
+            sql = """
+                    SELECT id, name, description, created_at
+                    FROM subjects
+                    WHERE name LIKE ?
+                    ORDER BY id
+                    """;
+        }
+
+        List<Subject> subjects = new ArrayList<>();
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            if (field.equals("ID")) {
+                statement.setLong(1, Long.parseLong(value));
+            } else {
+                statement.setString(1, "%" + value + "%");
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    subjects.add(mapRow(resultSet));
+                }
+            }
+
+            return subjects;
+        } catch (NumberFormatException e) {
+            return List.of();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to search subjects", e);
+        }
+    }
+
+    @Override
+    public void update(Subject subject) {
         String sql = """
                     UPDATE subjects
                     SET name = ?,
@@ -114,8 +158,9 @@ public class SubjectRepositoryImpl implements SubjectRepository {
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setString(1, subject.getName());
             statement.setString(2, subject.getDescription());
             statement.setLong(3, subject.getId());
@@ -123,50 +168,37 @@ public class SubjectRepositoryImpl implements SubjectRepository {
             int affectedRows = statement.executeUpdate();
 
             if (affectedRows == 0) {
-                throw new IllegalArgumentException(
-                        "Subject not found: " + subject.getId()
-                );
+                throw new IllegalArgumentException("Subject not found: " + subject.getId());
             }
-
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Failed to update subject: " + subject.getId(),
-                    e
-            );
+            throw new RuntimeException("Failed to update subject: " + subject.getId(), e);
         }
     }
 
     @Override
     public void deleteById(Long id) {
-
         String sql = """
                     DELETE FROM subjects
                     WHERE id = ?
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setLong(1, id);
 
             int affectedRows = statement.executeUpdate();
 
             if (affectedRows == 0) {
-                throw new IllegalArgumentException(
-                        "Subject not found: " + id
-                );
+                throw new IllegalArgumentException("Subject not found: " + id);
             }
-
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Failed to delete subject: " + id,
-                    e
-            );
+            throw new RuntimeException("Failed to delete subject: " + id, e);
         }
     }
 
     private Subject mapRow(ResultSet resultSet) throws SQLException {
-
         return new Subject(
                 resultSet.getLong("id"),
                 resultSet.getString("name"),
