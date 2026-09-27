@@ -5,18 +5,21 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.JComboBox;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -167,7 +170,6 @@ public class TeacherPanel extends JPanel {
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(150, 150, 150)),
                 BorderFactory.createEmptyBorder(0, 10, 0, 10)));
-        searchField.setEnabled(false);
 
         searchTypeComboBox.setUI(new BasicComboBoxUI() {
             @Override
@@ -189,12 +191,43 @@ public class TeacherPanel extends JPanel {
         searchTypeComboBox.setFont(INTER_REGULAR);
         searchTypeComboBox.setBackground(WHITE);
         searchTypeComboBox.setFocusable(false);
-        searchTypeComboBox.setEnabled(false);
 
         panel.add(searchField, BorderLayout.CENTER);
         panel.add(searchTypeComboBox, BorderLayout.EAST);
 
+        searchField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                searchTeachers();
+            }
+        });
+
+        searchTypeComboBox.addActionListener(_ -> searchTeachers());
+
         return panel;
+    }
+
+    private void searchTeachers() {
+        String value = searchField.getText().trim();
+
+        if (value.isEmpty()) {
+            loadTeachers();
+            return;
+        }
+
+        String field = (String) searchTypeComboBox.getSelectedItem();
+
+        try {
+            List<Teacher> teachers = teacherApplication.search(field, value);
+            updateTable(teachers);
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "ID must contain only numbers.",
+                    "Invalid search",
+                    JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void configureTable() {
