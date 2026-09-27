@@ -50,7 +50,7 @@ public class SubjectFormDialog extends JDialog {
         this.originalSubject = subject;
 
         nameField = new PlaceholderTextField("Enter subject name");
-        descriptionField = new PlaceholderTextField("Enter subject description");
+        descriptionField = new PlaceholderTextField("Enter subject description (optional)");
 
         configureDialog();
         createContent();
@@ -180,15 +180,18 @@ public class SubjectFormDialog extends JDialog {
 
     private void fillForm(Subject subject) {
         nameField.setText(subject.getName());
-        descriptionField.setText(subject.getDescription());
+
+        if (subject.getDescription() != null) {
+            descriptionField.setText(subject.getDescription());
+        }
     }
 
     private void saveSubject() {
         String name = nameField.getText().trim();
         String description = descriptionField.getText().trim();
 
-        if (name.isEmpty() || description.isEmpty()) {
-            showValidationError("Please fill in all fields.");
+        if (name.isEmpty()) {
+            showValidationError("Subject name is required.");
             return;
         }
 
@@ -196,10 +199,12 @@ public class SubjectFormDialog extends JDialog {
             subject = new Subject(
                     originalSubject.getId(),
                     name,
-                    description,
+                    description.isEmpty() ? null : description,
                     originalSubject.getCreatedAt());
         } else {
-            subject = new Subject(name, description);
+            subject = new Subject(
+                    name,
+                    description.isEmpty() ? null : description);
         }
 
         dispose();
