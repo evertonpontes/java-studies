@@ -26,6 +26,10 @@ public class TeacherService {
         return teacherRepository.findAll();
     }
 
+    public List<Teacher> search(String field, String value) {
+        return teacherRepository.search(field, value);
+    }
+
     public void update(Teacher teacher) {
         teacherRepository.update(teacher);
     }
