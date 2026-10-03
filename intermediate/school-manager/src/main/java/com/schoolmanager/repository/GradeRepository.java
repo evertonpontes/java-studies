@@ -13,6 +13,8 @@ public interface GradeRepository {
 
     List<Grade> findAll();
 
+    List<Grade> search(String field, String value);
+
     void update(Grade grade);
 
     void deleteById(Long id);
