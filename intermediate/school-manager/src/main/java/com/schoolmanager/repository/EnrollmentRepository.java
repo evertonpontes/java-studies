@@ -13,6 +13,8 @@ public interface EnrollmentRepository {
 
     List<Enrollment> findAll();
 
+    List<Enrollment> search(String field, String value);
+
     void update(Enrollment enrollment);
 
     void deleteById(Long id);
