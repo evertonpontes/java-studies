@@ -39,7 +39,18 @@ public class GradeService {
         return gradeRepository.findAll();
     }
 
+    public List<Grade> search(String field, String value) {
+        return gradeRepository.search(field, value);
+    }
+
     public void update(Grade grade) {
+
+        if (enrollmentRepository.findById(grade.getEnrollmentId()).isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Enrollment not found: " + grade.getEnrollmentId()
+            );
+        }
+
         gradeRepository.update(grade);
     }
 
