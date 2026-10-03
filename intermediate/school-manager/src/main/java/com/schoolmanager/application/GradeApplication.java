@@ -26,6 +26,10 @@ public class GradeApplication {
         return gradeService.findAll();
     }
 
+    public List<Grade> search(String field, String value) {
+        return gradeService.search(field, value);
+    }
+
     public void update(Grade grade) {
         gradeService.update(grade);
     }
