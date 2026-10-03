@@ -16,33 +16,29 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
 
     @Override
     public Classroom save(Classroom classroom) {
-
         String sql = """
                     INSERT INTO classrooms (name, teacher_id, subject_id)
                     VALUES (?, ?, ?)
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                sql,
-                Statement.RETURN_GENERATED_KEYS
-        )) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        sql,
+                        Statement.RETURN_GENERATED_KEYS)
+        ) {
             statement.setString(1, classroom.getName());
             statement.setLong(2, classroom.getTeacherId());
             statement.setLong(3, classroom.getSubjectId());
-
             statement.executeUpdate();
 
             try (ResultSet resultSet = statement.getGeneratedKeys()) {
-
                 if (resultSet.next()) {
                     classroom.setId(resultSet.getLong(1));
                 }
             }
 
             return classroom;
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to save classroom", e);
         }
@@ -50,14 +46,16 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
 
     @Override
     public Optional<Classroom> findById(Long id) {
-
         String sql = """
                 SELECT id, name, teacher_id, subject_id, created_at
                 FROM classrooms
                 WHERE id = ?
                 """;
 
-        try (Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setLong(1, id);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -80,24 +78,80 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
                 ORDER BY id
                 """;
 
-        ArrayList<Classroom> classrooms = new ArrayList<>();
+        List<Classroom> classrooms = new ArrayList<>();
 
-        try (Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql); ResultSet resultSet = statement.executeQuery()) {
-
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
+        ) {
             while (resultSet.next()) {
                 classrooms.add(mapRow(resultSet));
             }
 
             return classrooms;
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to find all classrooms", e);
         }
     }
 
     @Override
-    public void update(Classroom classroom) {
+    public List<Classroom> search(String field, String value) {
+        String sql = switch (field) {
+            case "ID" -> """
+                    SELECT id, name, teacher_id, subject_id, created_at
+                    FROM classrooms
+                    WHERE id = ?
+                    """;
+            case "Name" -> """
+                    SELECT id, name, teacher_id, subject_id, created_at
+                    FROM classrooms
+                    WHERE name LIKE ?
+                    ORDER BY id
+                    """;
+            case "Teacher ID" -> """
+                    SELECT id, name, teacher_id, subject_id, created_at
+                    FROM classrooms
+                    WHERE teacher_id = ?
+                    ORDER BY id
+                    """;
+            case "Subject ID" -> """
+                    SELECT id, name, teacher_id, subject_id, created_at
+                    FROM classrooms
+                    WHERE subject_id = ?
+                    ORDER BY id
+                    """;
+            default -> throw new IllegalArgumentException("Invalid search field: " + field);
+        };
 
+        List<Classroom> classrooms = new ArrayList<>();
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            if ("Name".equals(field)) {
+                statement.setString(1, "%" + value + "%");
+            } else {
+                statement.setLong(1, Long.parseLong(value));
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    classrooms.add(mapRow(resultSet));
+                }
+            }
+
+            return classrooms;
+        } catch (NumberFormatException e) {
+            return List.of();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to search classrooms", e);
+        }
+    }
+
+    @Override
+    public void update(Classroom classroom) {
         String sql = """
                     UPDATE classrooms
                     SET name = ?,
@@ -107,8 +161,9 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setString(1, classroom.getName());
             statement.setLong(2, classroom.getTeacherId());
             statement.setLong(3, classroom.getSubjectId());
@@ -119,7 +174,6 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
             if (affectedRows == 0) {
                 throw new IllegalArgumentException("Classroom not found: " + classroom.getId());
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update classroom: " + classroom.getId(), e);
         }
@@ -127,15 +181,15 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
 
     @Override
     public void deleteById(Long id) {
-
         String sql = """
                     DELETE FROM classrooms
                     WHERE id = ?
                 """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setLong(1, id);
 
             int affectedRows = statement.executeUpdate();
@@ -143,7 +197,6 @@ public class ClassroomRepositoryImpl implements ClassroomRepository {
             if (affectedRows == 0) {
                 throw new IllegalArgumentException("Classroom not found: " + id);
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to delete classroom: " + id, e);
         }
