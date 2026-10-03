@@ -26,6 +26,10 @@ public class EnrollmentApplication {
         return enrollmentService.findAll();
     }
 
+    public List<Enrollment> search(String field, String value) {
+        return enrollmentService.search(field, value);
+    }
+
     public void update(Enrollment enrollment) {
         enrollmentService.update(enrollment);
     }
