@@ -25,19 +25,7 @@ public class EnrollmentService {
     }
 
     public Enrollment save(Enrollment enrollment) {
-
-        if (studentRepository.findById(enrollment.getStudentId()).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Student not found: " + enrollment.getStudentId()
-            );
-        }
-
-        if (classroomRepository.findById(enrollment.getClassroomId()).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Classroom not found: " + enrollment.getClassroomId()
-            );
-        }
-
+        validateReferences(enrollment);
         return enrollmentRepository.save(enrollment);
     }
 
@@ -49,11 +37,26 @@ public class EnrollmentService {
         return enrollmentRepository.findAll();
     }
 
+    public List<Enrollment> search(String field, String value) {
+        return enrollmentRepository.search(field, value);
+    }
+
     public void update(Enrollment enrollment) {
+        validateReferences(enrollment);
         enrollmentRepository.update(enrollment);
     }
 
     public void deleteById(Long id) {
         enrollmentRepository.deleteById(id);
+    }
+
+    private void validateReferences(Enrollment enrollment) {
+        if (studentRepository.findById(enrollment.getStudentId()).isEmpty()) {
+            throw new IllegalArgumentException("Student not found: " + enrollment.getStudentId());
+        }
+
+        if (classroomRepository.findById(enrollment.getClassroomId()).isEmpty()) {
+            throw new IllegalArgumentException("Classroom not found: " + enrollment.getClassroomId());
+        }
     }
 }
