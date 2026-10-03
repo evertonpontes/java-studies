@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650">
+<rect width="1200" height="650" fill="#f4f5f7"/><rect width="1200" height="34" fill="#e8ebf0"/>
+<text x="70" y="22" font-family="Arial" font-size="13" fill="#394150">School Manager</text>
+<rect y="34" width="205" height="616" fill="#111a2d"/><text x="24" y="75" font-family="Arial" font-size="20" font-weight="700" fill="white">School Manager</text>
+<rect x="16" y="99" width="173" height="28" fill="#344660"/>
+<g font-family="Arial" font-size="13" fill="#dbe3ef"><text x="27" y="118" fill="white">Students</text><text x="27" y="150">Teachers</text><text x="27" y="182">Subjects</text><text x="27" y="214">Classrooms</text><text x="27" y="246">Enrollments</text><text x="27" y="278">Grades</text></g>
+<text x="244" y="73" font-family="Arial" font-size="21" font-weight="700" fill="#111827">Students</text><text x="244" y="96" font-family="Arial" font-size="13" fill="#7b8492">Manage students</text>
+<rect x="1082" y="55" width="98" height="42" fill="#111a2d"/><text x="1098" y="81" font-family="Arial" font-size="12" fill="white">Add Student</text>
+<rect x="244" y="116" width="930" height="34" fill="white" stroke="#aeb4bd"/><text x="256" y="138" font-family="Arial" font-size="12" font-style="italic" fill="#a3a9b2">Search students...</text>
+<rect x="244" y="161" width="930" height="31" fill="#111a2d"/>
+<g font-family="Arial" font-size="12" font-weight="700" fill="white"><text x="250" y="181">ID</text><text x="455" y="181">Name</text><text x="665" y="181">Email</text><text x="875" y="181">Birth Date</text><text x="1080" y="181">Actions</text></g>
+<g font-family="Arial" font-size="12" fill="#111827">
+<text x="250" y="211">1</text><text x="455" y="211">João Pedro Almeida</text><text x="665" y="211">joao.almeida@email.com</text><text x="875" y="211">2005/03/15</text>
+<text x="250" y="243">2</text><text x="455" y="243">Maria Eduarda Santos</text><text x="665" y="243">maria.santos@email.com</text><text x="875" y="243">2006/07/22</text>
+<text x="250" y="275">3</text><text x="455" y="275">Lucas Gabriel Oliveira</text><text x="665" y="275">lucas.oliveira@email.com</text><text x="875" y="275">2004/11/08</text>
+<text x="250" y="307">4</text><text x="455" y="307">Ana Clara Souza</text><text x="665" y="307">ana.souza@email.com</text><text x="875" y="307">2005/01/30</text>
+<text x="250" y="339">5</text><text x="455" y="339">Gabriel Henrique Lima</text><text x="665" y="339">gabriel.lima@email.com</text><text x="875" y="339">2006/05/17</text></g>
+<g stroke="#b8bcc3"><line x1="244" y1="218" x2="1174" y2="218"/><line x1="244" y1="250" x2="1174" y2="250"/><line x1="244" y1="282" x2="1174" y2="282"/><line x1="244" y1="314" x2="1174" y2="314"/><line x1="244" y1="346" x2="1174" y2="346"/></g>
+<g font-family="Arial" font-size="11"><rect x="1060" y="198" width="38" height="19" fill="#6aa7d8"/><text x="1068" y="212" fill="#172033">Edit</text><rect x="1103" y="198" width="47" height="19" fill="#ef4b4b"/><text x="1111" y="212" fill="white">Delete</text>
+<rect x="1060" y="230" width="38" height="19" fill="#6aa7d8"/><text x="1068" y="244" fill="#172033">Edit</text><rect x="1103" y="230" width="47" height="19" fill="#ef4b4b"/><text x="1111" y="244" fill="white">Delete</text>
+<rect x="1060" y="262" width="38" height="19" fill="#6aa7d8"/><text x="1068" y="276" fill="#172033">Edit</text><rect x="1103" y="262" width="47" height="19" fill="#ef4b4b"/><text x="1111" y="276" fill="white">Delete</text></g>
+<text x="244" y="605" font-family="Arial" font-size="12" fill="#8b93a0">Java Swing • JDBC • MySQL • Maven • Docker</text></svg>
