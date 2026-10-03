@@ -3,10 +3,9 @@ package com.schoolmanager.ui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+
 import com.schoolmanager.config.ApplicationConfig;
 
 public class MainFrame extends JFrame {
@@ -37,13 +36,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(new SubjectPanel(applicationConfig.subjectApplication()), "subjects");
         contentPanel.add(new ClassroomPanel(applicationConfig.classroomApplication()), "classrooms");
         contentPanel.add(new EnrollmentPanel(applicationConfig.enrollmentApplication()), "enrollments");
-        contentPanel.add(createPlaceholder("Grades"), "grades");
-    }
-
-    private JPanel createPlaceholder(String title) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel(title, SwingConstants.CENTER), BorderLayout.CENTER);
-        return panel;
+        contentPanel.add(new GradePanel(applicationConfig.gradeApplication()), "grades");
     }
 
     private void show(String card) {
