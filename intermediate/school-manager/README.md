@@ -4,7 +4,7 @@ A desktop school management application built with **Java Swing**, **JDBC**, and
 
 ## Preview
 
-![School Manager preview](docs/preview.svg)
+![School Manager preview](docs/preview.png)
 
 ## Overview
 
