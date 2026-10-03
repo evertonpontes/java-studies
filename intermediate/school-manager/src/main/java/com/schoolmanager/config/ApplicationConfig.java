@@ -1,11 +1,14 @@
 package com.schoolmanager.config;
 
 import com.schoolmanager.application.ClassroomApplication;
+import com.schoolmanager.application.EnrollmentApplication;
 import com.schoolmanager.application.StudentApplication;
 import com.schoolmanager.application.SubjectApplication;
 import com.schoolmanager.application.TeacherApplication;
 import com.schoolmanager.repository.ClassroomRepository;
 import com.schoolmanager.repository.ClassroomRepositoryImpl;
+import com.schoolmanager.repository.EnrollmentRepository;
+import com.schoolmanager.repository.EnrollmentRepositoryImpl;
 import com.schoolmanager.repository.StudentRepository;
 import com.schoolmanager.repository.StudentRepositoryImpl;
 import com.schoolmanager.repository.SubjectRepository;
@@ -13,6 +16,7 @@ import com.schoolmanager.repository.SubjectRepositoryImpl;
 import com.schoolmanager.repository.TeacherRepository;
 import com.schoolmanager.repository.TeacherRepositoryImpl;
 import com.schoolmanager.service.ClassroomService;
+import com.schoolmanager.service.EnrollmentService;
 import com.schoolmanager.service.StudentService;
 import com.schoolmanager.service.SubjectService;
 import com.schoolmanager.service.TeacherService;
@@ -35,6 +39,10 @@ public class ApplicationConfig {
     private final ClassroomService classroomService;
     private final ClassroomApplication classroomApplication;
 
+    private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentService enrollmentService;
+    private final EnrollmentApplication enrollmentApplication;
+
     public ApplicationConfig() {
         studentRepository = new StudentRepositoryImpl();
         studentService = new StudentService(studentRepository);
@@ -51,6 +59,13 @@ public class ApplicationConfig {
         classroomRepository = new ClassroomRepositoryImpl();
         classroomService = new ClassroomService(classroomRepository);
         classroomApplication = new ClassroomApplication(classroomService);
+
+        enrollmentRepository = new EnrollmentRepositoryImpl();
+        enrollmentService = new EnrollmentService(
+                enrollmentRepository,
+                studentRepository,
+                classroomRepository);
+        enrollmentApplication = new EnrollmentApplication(enrollmentService);
     }
 
     public StudentApplication studentApplication() {
@@ -67,5 +82,9 @@ public class ApplicationConfig {
 
     public ClassroomApplication classroomApplication() {
         return classroomApplication;
+    }
+
+    public EnrollmentApplication enrollmentApplication() {
+        return enrollmentApplication;
     }
 }
