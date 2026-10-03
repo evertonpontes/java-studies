@@ -19,80 +19,33 @@ public class MainFrame extends JFrame {
 
     public MainFrame(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
-
         this.setTitle("School Manager");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null);
-
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
-
         createContent();
-
         NavigationPanel navigationPanel = new NavigationPanel(
-                () -> show("students"),
-                () -> show("teachers"),
-                () -> show("subjects"),
-                () -> show("classrooms"),
-                () -> show("enrollments"),
-                () -> show("grades")
-        );
-
+                () -> show("students"), () -> show("teachers"), () -> show("subjects"),
+                () -> show("classrooms"), () -> show("enrollments"), () -> show("grades"));
         setLayout(new BorderLayout());
-
         add(navigationPanel, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
     }
 
     private void createContent() {
-        contentPanel.add(
-                new StudentPanel(
-                        applicationConfig.studentApplication()
-                ),
-                "students"
-        );
-
-        contentPanel.add(
-                new TeacherPanel(
-                        applicationConfig.teacherApplication()
-                ),
-                "teachers"
-        );
-
-        contentPanel.add(
-                new SubjectPanel(
-                        applicationConfig.subjectApplication()
-                ),
-                "subjects"
-        );
-
-        contentPanel.add(
-                createPlaceholder("Classrooms"),
-                "classrooms"
-        );
-
-        contentPanel.add(
-                createPlaceholder("Enrollments"),
-                "enrollments"
-        );
-
-        contentPanel.add(
-                createPlaceholder("Grades"),
-                "grades"
-        );
+        contentPanel.add(new StudentPanel(applicationConfig.studentApplication()), "students");
+        contentPanel.add(new TeacherPanel(applicationConfig.teacherApplication()), "teachers");
+        contentPanel.add(new SubjectPanel(applicationConfig.subjectApplication()), "subjects");
+        contentPanel.add(new ClassroomPanel(applicationConfig.classroomApplication()), "classrooms");
+        contentPanel.add(createPlaceholder("Enrollments"), "enrollments");
+        contentPanel.add(createPlaceholder("Grades"), "grades");
     }
 
     private JPanel createPlaceholder(String title) {
         JPanel panel = new JPanel(new BorderLayout());
-
-        JLabel label = new JLabel(
-                title,
-                SwingConstants.CENTER
-        );
-
-        panel.add(label, BorderLayout.CENTER);
-
+        panel.add(new JLabel(title, SwingConstants.CENTER), BorderLayout.CENTER);
         return panel;
     }
 
@@ -103,9 +56,7 @@ public class MainFrame extends JFrame {
     public static void showApplication() {
         SwingUtilities.invokeLater(() -> {
             ApplicationConfig applicationConfig = new ApplicationConfig();
-
             MainFrame frame = new MainFrame(applicationConfig);
-
             frame.setVisible(true);
         });
     }
