@@ -10,7 +10,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.math.BigDecimal;
-import java.math.NumberFormatException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
