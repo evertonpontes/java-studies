@@ -26,6 +26,10 @@ public class ClassroomService {
         return classroomRepository.findAll();
     }
 
+    public List<Classroom> search(String field, String value) {
+        return classroomRepository.search(field, value);
+    }
+
     public void update(Classroom classroom) {
         classroomRepository.update(classroom);
     }
